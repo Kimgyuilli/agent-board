@@ -3,11 +3,16 @@ import type {
   ExtensionToWebviewMessage,
   WebviewToExtensionMessage,
 } from "@agent-board/shared";
+import type { BoardService } from "../services/BoardService.js";
 
 export class BoardPanelProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(
+    private readonly _extensionUri: vscode.Uri,
+    private readonly _webviewDistUri: vscode.Uri,
+    private readonly _service: BoardService,
+  ) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -18,30 +23,14 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this._extensionUri],
+      localResourceRoots: [this._extensionUri, this._webviewDistUri],
     };
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-    // Handle messages from the webview
-    webviewView.webview.onDidReceiveMessage(
-      (message: WebviewToExtensionMessage) => {
-        switch (message.type) {
-          case "move-task":
-            // TODO: Handle task move
-            break;
-          case "update-task-status":
-            // TODO: Handle task status update
-            break;
-          case "update-task":
-            // TODO: Handle task update
-            break;
-          case "request-refresh":
-            // TODO: Handle refresh request
-            break;
-        }
-      },
-    );
+    webviewView.webview.onDidReceiveMessage((message: WebviewToExtensionMessage) => {
+      this._handleMessage(message);
+    });
   }
 
   public postMessage(message: ExtensionToWebviewMessage): void {
@@ -50,35 +39,62 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  private async _handleMessage(message: WebviewToExtensionMessage): Promise<void> {
+    try {
+      switch (message.type) {
+        case "request-refresh": {
+          const data = this._service.getInitData();
+          this.postMessage({ type: "init-data", ...data });
+          break;
+        }
+        case "move-task": {
+          const tasks = this._service.moveTask(
+            message.taskId,
+            message.targetPhaseId,
+            message.position,
+          );
+          this.postMessage({ type: "tasks-updated", tasks });
+          break;
+        }
+        case "update-task-status": {
+          const task = this._service.updateTaskStatus(message.taskId, message.status);
+          this.postMessage({ type: "tasks-updated", tasks: [task] });
+          break;
+        }
+        case "update-task": {
+          const task = this._service.updateTask(message.taskId, message.updates);
+          this.postMessage({ type: "tasks-updated", tasks: [task] });
+          break;
+        }
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      vscode.window.showErrorMessage(`Agent Board: ${msg}`);
+    }
+  }
+
   private _getHtmlForWebview(webview: vscode.Webview): string {
     const nonce = getNonce();
 
-    // TODO: Load actual webview bundle when available
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._webviewDistUri, "assets", "index.js"),
+    );
+    const styleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._webviewDistUri, "assets", "index.css"),
+    );
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${webview.cspSource};">
+  <link rel="stylesheet" href="${styleUri}">
   <title>Agent Board</title>
 </head>
 <body>
-  <div id="root">
-    <h1>Agent Board</h1>
-    <p>Webview loading...</p>
-  </div>
-  <script nonce="${nonce}">
-    const vscode = acquireVsCodeApi();
-
-    // Example: Request initial data
-    vscode.postMessage({ type: 'request-refresh' });
-
-    // Example: Listen for messages from extension
-    window.addEventListener('message', event => {
-      const message = event.data;
-      console.log('Received message:', message.type);
-    });
-  </script>
+  <div id="root"></div>
+  <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
   }
