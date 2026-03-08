@@ -7,7 +7,6 @@
   "engines": {
     "vscode": "^1.85.0"
   },
-  "type": "module",
   "main": "./dist/extension.js",
   "categories": ["Other"],
   "contributes": {
@@ -22,7 +21,7 @@
         {
           "id": "agent-board",
           "title": "Agent Board",
-          "icon": "$(layout-sidebar-left)"
+          "icon": "resources/board-icon.svg"
         }
       ]
     },
