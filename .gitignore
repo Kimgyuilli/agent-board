@@ -27,3 +27,10 @@ Thumbs.db
 
 # MCP
 mcp/__pycache__/
+
+# Agent workflow
+.claude/
+references/
+PLAN.md
+PROGRESS.md
+CLAUDE.md
