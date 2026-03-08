@@ -1,0 +1,21 @@
+{
+  "name": "@agent-board/mcp-server",
+  "version": "0.0.1",
+  "description": "Agent Board MCP 도구 서버",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --platform=node --packages=external",
+    "test": "vitest run",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "esbuild": "^0.24.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -8,6 +8,11 @@ __pycache__/
 node_modules/
 .next/
 out/
+dist/
+*.vsix
+
+# Agent Board
+.agent-board/
 
 # Environment
 .env
