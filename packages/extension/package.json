@@ -31,7 +31,8 @@
         {
           "type": "webview",
           "id": "agent-board.boardView",
-          "name": "Board"
+          "name": "Board",
+          "icon": "$(kanban)"
         }
       ]
     }
