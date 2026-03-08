@@ -39,10 +39,10 @@
 
 | 태스크 | 담당 | 상태 | 의존 | 비고 |
 |--------|------|------|------|------|
-| 칸반 보드 레이아웃 (Phase 컬럼) | frontend-dev | pending | Phase 2 | 가로 스크롤, Phase별 컬럼 |
-| Task 카드 컴포넌트 | frontend-dev | pending | 칸반 보드 레이아웃 | 상태 뱃지, 에이전트, blocked 사유 |
-| 데이터 바인딩 (useVSCodeApi → React state) | frontend-dev | pending | 칸반 보드 레이아웃 | init-data 수신 → state 업데이트 |
-| 빈 상태 / 로딩 UI | frontend-dev | pending | 데이터 바인딩 | 프로젝트 없을 때, 로딩 중 표시 |
+| 칸반 보드 레이아웃 (Phase 컬럼) | frontend-dev | done | Phase 2 | KanbanBoard + PhaseColumn 컴포넌트 |
+| Task 카드 컴포넌트 | frontend-dev | done | 칸반 보드 레이아웃 | TaskCard + StatusBadge 컴포넌트 |
+| 데이터 바인딩 (useVSCodeApi → React state) | frontend-dev | done | 칸반 보드 레이아웃 | useBoardData 훅 |
+| 빈 상태 / 로딩 UI | frontend-dev | done | 데이터 바인딩 | EmptyState + loading spinner |
 
 ## Phase 4: 드래그앤드롭 + 태스크 인터랙션
 

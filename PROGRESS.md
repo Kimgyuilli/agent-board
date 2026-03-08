@@ -2,6 +2,31 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-09 05:40 — frontend-dev (Phase 3 완료)
+### 완료한 작업
+- 칸반 보드 UI 구현 (6개 신규 파일 + 2개 수정)
+  - `packages/webview/src/hooks/useBoardData.ts`: 데이터 페칭 훅
+    - init-data, tasks-updated (부분/전체 머지), phases-updated 핸들링
+    - useCallback으로 무한 리렌더 방지, 함수형 state 업데이트
+    - 마운트 시 request-refresh 호출
+  - `packages/webview/src/components/KanbanBoard.tsx`: 가로 스크롤 보드
+    - useMemo로 tasks를 phase_id별 그룹핑 + position 정렬
+    - phases를 order 순 정렬
+  - `packages/webview/src/components/PhaseColumn.tsx`: Phase 컬럼
+    - 헤더 (title + 태스크 수 뱃지), 세로 스크롤 태스크 리스트
+  - `packages/webview/src/components/TaskCard.tsx`: Task 카드
+    - title, #id, StatusBadge, description (2줄 clamp), assigned_agent, blocked_reason
+  - `packages/webview/src/components/StatusBadge.tsx`: 상태 뱃지 (pending/in_progress/done/blocked)
+  - `packages/webview/src/components/EmptyState.tsx`: 빈 상태 안내
+  - `packages/webview/src/App.tsx`: useBoardData + 조건부 렌더링 (loading/empty/board)
+  - `packages/webview/src/index.css`: VS Code CSS 변수 기반 스타일 (Tailwind 색상 미사용)
+- 검증: 빌드 성공, 48/48 테스트 통과
+### 다음 할 일
+- Phase 4 시작: @dnd-kit 드래그앤드롭, 태스크 상태 변경 UI, 상세 패널
+### 이슈/참고
+- 모든 색상은 VS Code CSS 변수(`--vscode-*`)만 사용하여 light/dark/high-contrast 자동 지원
+- tasks-updated 메시지: 1개=부분 업데이트(ID 매칭 머지), 2개+=전체 교체
+
 ## 2026-03-09 01:35 — backend-dev (Phase 2 완료)
 ### 완료한 작업
 - MCP Server DB 공개 API (`packages/mcp-server/src/db/index.ts`)
