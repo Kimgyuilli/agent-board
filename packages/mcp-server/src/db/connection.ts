@@ -6,6 +6,7 @@ let instance: Database.Database | null = null;
 export function getDatabase(dbPath: string = "agent-board.db"): Database.Database {
   if (!instance) {
     instance = new Database(dbPath);
+    instance.pragma("busy_timeout = 5000");
     initializeDatabase(instance);
   }
   return instance;

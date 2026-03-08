@@ -4,6 +4,10 @@
   "description": "Agent Board MCP 도구 서버",
   "type": "module",
   "main": "./dist/index.js",
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./db": { "types": "./src/db/index.ts", "default": "./src/db/index.ts" }
+  },
   "scripts": {
     "build": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --platform=node --packages=external",
     "test": "vitest run",
