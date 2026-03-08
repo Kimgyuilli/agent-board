@@ -8,7 +8,9 @@
     "vscode": "^1.85.0"
   },
   "main": "./dist/extension.js",
-  "categories": ["Other"],
+  "categories": [
+    "Other"
+  ],
   "contributes": {
     "commands": [
       {
@@ -43,9 +45,9 @@
     "lint": "eslint src/"
   },
   "dependencies": {
-    "@agent-board/shared": "workspace:*",
     "@agent-board/mcp-server": "workspace:*",
-    "better-sqlite3": "^11.0.0"
+    "@agent-board/shared": "workspace:*",
+    "better-sqlite3": "^12.6.2"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
