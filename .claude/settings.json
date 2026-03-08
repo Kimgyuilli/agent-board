@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "TeammateIdle": [
+      {
+        "command": "bash .claude/hooks/quality-gate.sh",
+        "description": "lint + test 품질 게이트"
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "command": "bash .claude/hooks/verify-completion.sh",
+        "description": "완료 검증 (lint + test + tsc)"
+      }
+    ]
+  }
+}

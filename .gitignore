@@ -34,8 +34,8 @@ Thumbs.db
 mcp/__pycache__/
 
 # Agent workflow
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
 references/
-PLAN.md
-PROGRESS.md
 CLAUDE.md
