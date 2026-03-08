@@ -1,15 +1,39 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { getDatabase } from "./db/connection.js";
+import {
+  getProjectSummary,
+  getNextTasks,
+  claimTask,
+  completeTask,
+  blockTask,
+  getTaskContext,
+  addTask,
+  listTasks,
+} from "./db/service.js";
 
 const server = new McpServer({
   name: "agent-board",
   version: "0.0.1",
 });
 
+function ok(data: unknown) {
+  return { content: [{ type: "text" as const, text: JSON.stringify(data) }] };
+}
+
+function fail(message: string) {
+  return { content: [{ type: "text" as const, text: message }], isError: true as const };
+}
+
 // sync: 프로젝트 현재 상태 요약
-server.tool("sync", "프로젝트 현재 상태 요약", { project_id: z.number().optional() }, async () => {
-  return { content: [{ type: "text" as const, text: "not implemented" }] };
+server.tool("sync", "프로젝트 현재 상태 요약", { project_id: z.number().optional() }, async (args) => {
+  try {
+    const db = getDatabase();
+    return ok(getProjectSummary(db, args.project_id));
+  } catch (e) {
+    return fail((e as Error).message);
+  }
 });
 
 // next: 다음 수행 가능한 태스크 추천
@@ -17,8 +41,13 @@ server.tool(
   "next",
   "다음 수행 가능한 태스크 추천",
   { project_id: z.number().optional(), agent_id: z.string().optional() },
-  async () => {
-    return { content: [{ type: "text" as const, text: "not implemented" }] };
+  async (args) => {
+    try {
+      const db = getDatabase();
+      return ok(getNextTasks(db, args.project_id, args.agent_id));
+    } catch (e) {
+      return fail((e as Error).message);
+    }
   },
 );
 
@@ -27,8 +56,13 @@ server.tool(
   "claim",
   "태스크 할당",
   { task_id: z.number(), agent_id: z.string() },
-  async () => {
-    return { content: [{ type: "text" as const, text: "not implemented" }] };
+  async (args) => {
+    try {
+      const db = getDatabase();
+      return ok(claimTask(db, args.task_id, args.agent_id));
+    } catch (e) {
+      return fail((e as Error).message);
+    }
   },
 );
 
@@ -41,8 +75,13 @@ server.tool(
     content: z.string().optional(),
     files_changed: z.string().optional(),
   },
-  async () => {
-    return { content: [{ type: "text" as const, text: "not implemented" }] };
+  async (args) => {
+    try {
+      const db = getDatabase();
+      return ok(completeTask(db, args.task_id, args.content, args.files_changed));
+    } catch (e) {
+      return fail((e as Error).message);
+    }
   },
 );
 
@@ -51,14 +90,24 @@ server.tool(
   "block",
   "태스크 블로커 기록",
   { task_id: z.number(), reason: z.string() },
-  async () => {
-    return { content: [{ type: "text" as const, text: "not implemented" }] };
+  async (args) => {
+    try {
+      const db = getDatabase();
+      return ok(blockTask(db, args.task_id, args.reason));
+    } catch (e) {
+      return fail((e as Error).message);
+    }
   },
 );
 
 // context: 태스크 상세 조회
-server.tool("context", "태스크 상세 조회", { task_id: z.number() }, async () => {
-  return { content: [{ type: "text" as const, text: "not implemented" }] };
+server.tool("context", "태스크 상세 조회", { task_id: z.number() }, async (args) => {
+  try {
+    const db = getDatabase();
+    return ok(getTaskContext(db, args.task_id));
+  } catch (e) {
+    return fail((e as Error).message);
+  }
 });
 
 // add_task: 태스크 생성
@@ -72,8 +121,13 @@ server.tool(
     depends_on: z.array(z.number()).optional(),
     position: z.number().optional(),
   },
-  async () => {
-    return { content: [{ type: "text" as const, text: "not implemented" }] };
+  async (args) => {
+    try {
+      const db = getDatabase();
+      return ok(addTask(db, args.phase_id, args.title, args.description, args.depends_on, args.position));
+    } catch (e) {
+      return fail((e as Error).message);
+    }
   },
 );
 
@@ -87,8 +141,13 @@ server.tool(
     status: z.enum(["pending", "in_progress", "done", "blocked"]).optional(),
     assigned_agent: z.string().optional(),
   },
-  async () => {
-    return { content: [{ type: "text" as const, text: "not implemented" }] };
+  async (args) => {
+    try {
+      const db = getDatabase();
+      return ok(listTasks(db, args));
+    } catch (e) {
+      return fail((e as Error).message);
+    }
   },
 );
 

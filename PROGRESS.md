@@ -2,6 +2,34 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-09 01:11 — backend-dev (Phase 1 완료)
+### 완료한 작업
+- DB 서비스 레이어 구현 (`packages/mcp-server/src/db/service.ts`)
+  - `getOrCreateDefaultProject`: 기본 프로젝트 조회/생성
+  - `getProjectSummary`: sync용 프로젝트 + Phase별 통계 + 활성 태스크 + 최근 로그
+  - `getNextTasks`: pending이면서 의존 해결된 태스크 목록 (next)
+  - `claimTask`: 상태→in_progress, assigned_agent 설정, 시작 로그 (트랜잭션)
+  - `completeTask`: 상태→done, 완료 로그, 새로 unblock된 태스크 반환 (트랜잭션)
+  - `blockTask`: 상태→blocked, 사유 기록 (트랜잭션)
+  - `getTaskContext`: 태스크 + Phase + 로그 + 의존관계 상세
+  - `addTask`: INSERT + 의존관계 등록 + auto position (트랜잭션)
+  - `listTasks`: 필터(project_id, phase_id, status, assigned_agent) 조건 조회
+- MCP 도구 핸들러 연결 (`packages/mcp-server/src/index.ts`)
+  - 8개 도구 stub → 서비스 함수 호출로 교체
+  - try-catch + isError 플래그 에러 핸들링
+  - JSON 직렬화 응답
+- 서비스 레이어 단위 테스트 (`packages/mcp-server/src/__tests__/service.test.ts`)
+  - 29개 테스트 케이스 (전체 33개 = 기존 4 + 신규 29)
+  - 전체 워크플로우 테스트: claim → complete → unblock 흐름
+  - 에러 케이스: 존재하지 않는 엔티티, 잘못된 상태 전이, 미해결 의존관계
+- 검증: lint 클린, 33/33 테스트 통과, 빌드 성공 (14.3kb)
+### 다음 할 일
+- Phase 2 시작: Extension ↔ MCP Server 연결, Webview UI 구현
+### 이슈/참고
+- 모든 상태 변경 함수(claim, complete, block, addTask)는 `db.transaction()` 사용
+- parameterized queries로 SQL injection 방지
+- `getNextTasks`는 모든 의존관계가 done인 pending 태스크만 반환
+
 ## 2026-03-08 21:30 — backend-dev (Phase 0 완료)
 ### 완료한 작업
 - Webview 패키지 스캐폴딩 (`packages/webview/`)
