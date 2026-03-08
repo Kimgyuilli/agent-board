@@ -1,9 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-
-function App() {
-  return <div>Agent Board</div>;
-}
+import App from "./App.js";
+import "./index.css";
 
 const root = createRoot(document.getElementById("root")!);
 root.render(
