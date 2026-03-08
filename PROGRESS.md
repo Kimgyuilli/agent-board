@@ -2,6 +2,45 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-09 01:35 — backend-dev (Phase 2 완료)
+### 완료한 작업
+- MCP Server DB 공개 API (`packages/mcp-server/src/db/index.ts`)
+  - 배럴 파일: connection, schema, service의 모든 public 함수 재수출
+  - `package.json`에 `exports` 맵 추가 (`.`, `./db`)
+  - `connection.ts`에 `busy_timeout = 5000` pragma 추가 (동시 접근 안전)
+- Extension 빌드 설정 (`packages/extension/package.json`)
+  - 의존성: `@agent-board/mcp-server: workspace:*`, `better-sqlite3`, `@types/better-sqlite3`
+  - `prebuild` 스크립트: webview dist → extension dist/webview 복사
+  - esbuild: `--external:better-sqlite3` 추가
+- BoardService 서비스 레이어 (`packages/extension/src/services/BoardService.ts`)
+  - `getInitData(projectId?)`: Phase 목록 + Task 목록 조회
+  - `moveTask(taskId, targetPhaseId, position)`: 트랜잭션, position 재정렬
+  - `updateTaskStatus(taskId, status)`: UI용 유연한 상태 변경
+  - `updateTask(taskId, updates)`: 동적 SET 절 빌드
+- BoardPanel 리팩토링 (`packages/extension/src/panels/BoardPanel.ts`)
+  - 생성자: `_extensionUri`, `_webviewDistUri`, `_service` 3개 파라미터
+  - 메시지 핸들러: request-refresh, move-task, update-task-status, update-task
+  - HTML: Vite 번들 로드 (assets/index.js, assets/index.css), CSP에 font-src 추가
+  - try-catch 중앙 에러 처리 → `vscode.window.showErrorMessage()`
+- Extension 진입점 (`packages/extension/src/extension.ts`)
+  - `activate()`: DB 경로 결정 → getDatabase() → BoardService → BoardPanelProvider
+  - `deactivate()`: closeDatabase() 호출
+  - DB 경로: workspace/.agent-board/board.db 또는 globalStorage/board.db
+- BoardService 단위 테스트 (`packages/extension/src/__tests__/board-service.test.ts`)
+  - 13개 테스트 케이스 (전체 48개 = 기존 35 + 신규 13)
+  - getInitData: 빈 프로젝트 / 시드 데이터 / 특정 project_id
+  - moveTask: 같은 Phase / 다른 Phase / 존재하지 않는 task
+  - updateTaskStatus: 정상 변경 / 유연한 상태 전이 / 존재하지 않는 task
+  - updateTask: 단일/복수 필드 / 빈 업데이트 / 존재하지 않는 task
+- 검증: lint 클린, 48/48 테스트 통과, 4개 패키지 빌드 성공
+### 다음 할 일
+- Phase 3 시작: Webview 칸반 보드 UI (Phase 컬럼, Task 카드, 데이터 바인딩)
+### 이슈/참고
+- Extension(CJS) ↔ mcp-server(ESM) 호환: esbuild가 ESM→CJS 자동 변환
+- better-sqlite3 네이티브 모듈: esbuild external로 제외
+- Webview 번들: prebuild에서 dist/webview/로 복사, asWebviewUri()로 URI 변환
+- BoardService는 MCP 서비스와 역할 분리 (UI용 유연한 상태 변경 vs 에이전트용 엄격한 전이)
+
 ## 2026-03-09 01:11 — backend-dev (Phase 1 완료)
 ### 완료한 작업
 - DB 서비스 레이어 구현 (`packages/mcp-server/src/db/service.ts`)

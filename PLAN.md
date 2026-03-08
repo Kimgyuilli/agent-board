@@ -28,10 +28,10 @@
 
 | 태스크 | 담당 | 상태 | 의존 | 비고 |
 |--------|------|------|------|------|
-| Extension에서 DB 서비스 레이어 import + 초기화 | backend-dev | pending | Phase 1 | activate()에서 DB 연결, deactivate()에서 정리 |
-| Extension 메시지 핸들러 구현 | backend-dev | pending | DB 서비스 import | BoardPanel.ts TODO 4개 (request-refresh, move-task 등) |
-| Webview 빌드 → Extension 로드 파이프라인 | backend-dev | pending | — | BoardPanel에서 dist/assets/index.js 로드 |
-| Extension 빌드에 webview 번들 포함 | backend-dev | pending | Webview 빌드 파이프라인 | esbuild external 설정 or 복사 |
+| Extension에서 DB 서비스 레이어 import + 초기화 | backend-dev | done | Phase 1 | activate()에서 DB 연결, deactivate()에서 정리 |
+| Extension 메시지 핸들러 구현 | backend-dev | done | DB 서비스 import | BoardPanel.ts 4개 메시지 핸들러 구현 |
+| Webview 빌드 → Extension 로드 파이프라인 | backend-dev | done | — | BoardPanel에서 dist/assets/index.js 로드 |
+| Extension 빌드에 webview 번들 포함 | backend-dev | done | Webview 빌드 파이프라인 | prebuild 복사 + esbuild external |
 
 ## Phase 3: Webview 칸반 보드 UI
 
