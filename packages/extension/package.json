@@ -9,8 +9,33 @@
   },
   "main": "./dist/extension.js",
   "categories": ["Other"],
-  "activationEvents": [],
-  "contributes": {},
+  "activationEvents": ["onView:agent-board.boardView"],
+  "contributes": {
+    "commands": [
+      {
+        "command": "agent-board.showBoard",
+        "title": "Agent Board: Show Board"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "agent-board",
+          "title": "Agent Board",
+          "icon": "$(layout-sidebar-left)"
+        }
+      ]
+    },
+    "views": {
+      "agent-board": [
+        {
+          "type": "webview",
+          "id": "agent-board.boardView",
+          "name": "Board"
+        }
+      ]
+    }
+  },
   "scripts": {
     "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
     "test": "vitest run",
