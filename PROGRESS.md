@@ -2,6 +2,20 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-09 06:25 — backend-dev (네이티브 모듈 이슈 대응)
+### 완료한 작업
+- better-sqlite3 v11→v12 업그레이드 (Electron 39 호환)
+- VS Build Tools + electron-rebuild로 Extension 수동 테스트 성공
+- 테스트 복구: `pnpm install --force`로 시스템 Node용 바이너리 복원 (48/48 통과)
+- Extension CJS 호환: `"type": "module"` 제거
+- Activity Bar 아이콘: SVG 파일 경로로 수정
+### 다음 할 일
+- Phase 3.5: Extension↔MCP Server 프로세스 분리 (better-sqlite3 네이티브 모듈 Electron/Node ABI 충돌 근본 해결)
+### 이슈/참고
+- **근본 원인**: better-sqlite3는 C++ 네이티브 모듈. Electron(ABI 140)과 시스템 Node(ABI 127)가 동일 바이너리를 공유할 수 없음
+- **현재 상태**: `pnpm install`은 Node용, `electron-rebuild`는 Electron용. 테스트↔Extension 실행 시 전환 필요
+- **해결 방향**: Extension에서 better-sqlite3 직접 import 제거 → MCP Server를 child_process로 분리하여 시스템 Node에서 실행
+
 ## 2026-03-09 05:40 — frontend-dev (Phase 3 완료)
 ### 완료한 작업
 - 칸반 보드 UI 구현 (6개 신규 파일 + 2개 수정)

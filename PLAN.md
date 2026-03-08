@@ -44,16 +44,29 @@
 | 데이터 바인딩 (useVSCodeApi → React state) | frontend-dev | done | 칸반 보드 레이아웃 | useBoardData 훅 |
 | 빈 상태 / 로딩 UI | frontend-dev | done | 데이터 바인딩 | EmptyState + loading spinner |
 
+## Phase 3.5: Extension↔MCP Server 프로세스 분리
+
+> Extension이 better-sqlite3를 직접 import하지 않고, MCP Server를 child_process로 실행하여 통신하도록 아키텍처 변경.
+> 원인: better-sqlite3 네이티브 모듈이 Electron(Extension Host)과 시스템 Node.js(테스트)에서 서로 다른 ABI를 요구하여, 매번 rebuild 전환이 필요한 문제 해결.
+
+| 태스크 | 담당 | 상태 | 의존 | 비고 |
+|--------|------|------|------|------|
+| MCP Server에 Extension용 IPC 인터페이스 추가 | backend-dev | pending | Phase 3 | stdio 기반 JSON-RPC 또는 커스텀 프로토콜 |
+| Extension에서 MCP Server child_process 관리 | backend-dev | pending | IPC 인터페이스 | spawn, lifecycle, 재시작 |
+| BoardService를 IPC 클라이언트로 재작성 | backend-dev | pending | child_process 관리 | 직접 DB 호출 → IPC 메시지 기반 |
+| Extension에서 better-sqlite3 의존성 제거 | backend-dev | pending | BoardService 재작성 | package.json, esbuild external 정리 |
+| 기존 테스트 수정 + 통합 테스트 | backend-dev | pending | better-sqlite3 제거 | 48개 테스트 통과 확인 |
+
 ## Phase 4: 드래그앤드롭 + 태스크 인터랙션
 
 > 사용자가 UI에서 태스크를 조작할 수 있게 한다.
 
 | 태스크 | 담당 | 상태 | 의존 | 비고 |
 |--------|------|------|------|------|
-| @dnd-kit 드래그앤드롭 통합 | frontend-dev | pending | Phase 3 | Phase 간 이동, 순서 변경 |
-| 태스크 상태 변경 UI | frontend-dev | pending | Phase 3 | 상태 드롭다운 or 버튼 |
-| 태스크 상세 패널/모달 | frontend-dev | pending | Phase 3 | 제목, 설명, 에이전트 편집 |
-| Extension ↔ Webview 양방향 동기화 | backend-dev | pending | Phase 3 | 변경 → DB 저장 → UI 갱신 |
+| @dnd-kit 드래그앤드롭 통합 | frontend-dev | pending | Phase 3.5 | Phase 간 이동, 순서 변경 |
+| 태스크 상태 변경 UI | frontend-dev | pending | Phase 3.5 | 상태 드롭다운 or 버튼 |
+| 태스크 상세 패널/모달 | frontend-dev | pending | Phase 3.5 | 제목, 설명, 에이전트 편집 |
+| Extension ↔ Webview 양방향 동기화 | backend-dev | pending | Phase 3.5 | 변경 → DB 저장 → UI 갱신 |
 
 ## Phase 5: 실시간 모니터링 + 에이전트 활동
 
@@ -72,7 +85,7 @@
 
 | 태스크 | 담당 | 상태 | 의존 | 비고 |
 |--------|------|------|------|------|
-| Extension 단위 테스트 | backend-dev | pending | Phase 4 | 메시지 핸들러, DB 연동 |
+| Extension 단위 테스트 | backend-dev | pending | Phase 4 | 메시지 핸들러, IPC 통신 |
 | Webview 컴포넌트 테스트 | frontend-dev | pending | Phase 4 | Vitest + jsdom |
 | E2E 테스트 | backend-dev | pending | Phase 5 | @vscode/test-electron |
 | VSIX 패키징 + README | backend-dev | pending | E2E 테스트 | vsce package |
