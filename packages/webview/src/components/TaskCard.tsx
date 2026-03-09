@@ -1,13 +1,27 @@
-import type { Task } from "@agent-board/shared";
+import type { Task, TaskStatus } from "@agent-board/shared";
 import StatusBadge from "./StatusBadge";
+import StatusDropdown from "./StatusDropdown";
 
 interface TaskCardProps {
   task: Task;
+  onClick?: () => void;
+  onStatusChange?: (status: TaskStatus) => void;
+  isDragging?: boolean;
+  isOverlay?: boolean;
 }
 
-export default function TaskCard({ task }: TaskCardProps) {
+export default function TaskCard({ task, onClick, onStatusChange, isDragging, isOverlay }: TaskCardProps) {
+  const className = [
+    "task-card",
+    isDragging ? "task-card--dragging" : "",
+    isOverlay ? "task-card--overlay" : "",
+    onClick ? "task-card--clickable" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="task-card">
+    <div className={className} onClick={onClick} role={onClick ? "button" : undefined} tabIndex={onClick ? 0 : undefined}>
       <div className="flex items-start justify-between gap-2">
         <span className="text-sm font-medium">{task.title}</span>
         <span
@@ -18,7 +32,11 @@ export default function TaskCard({ task }: TaskCardProps) {
         </span>
       </div>
 
-      <StatusBadge status={task.status} />
+      {onStatusChange ? (
+        <StatusDropdown currentStatus={task.status} onStatusChange={onStatusChange} />
+      ) : (
+        <StatusBadge status={task.status} />
+      )}
 
       {task.description && (
         <p className="task-description">{task.description}</p>

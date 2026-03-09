@@ -1,23 +1,45 @@
-import type { Phase, Task } from "@agent-board/shared";
-import TaskCard from "./TaskCard";
+import { useMemo } from "react";
+import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import type { Phase, Task, TaskStatus } from "@agent-board/shared";
+import SortableTaskCard from "./SortableTaskCard";
 
 interface PhaseColumnProps {
   phase: Phase;
   tasks: Task[];
+  onTaskClick: (task: Task) => void;
+  onStatusChange: (taskId: number, status: TaskStatus) => void;
 }
 
-export default function PhaseColumn({ phase, tasks }: PhaseColumnProps) {
+export default function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange }: PhaseColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `phase-${phase.id}`,
+    data: { type: "phase", phaseId: phase.id },
+  });
+
+  const taskIds = useMemo(() => tasks.map((t) => `task-${t.id}`), [tasks]);
+
   return (
     <div className="phase-column">
       <div className="phase-header">
         <span className="text-xs font-semibold uppercase">{phase.title}</span>
         <span className="phase-count">{tasks.length}</span>
       </div>
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-2">
-        {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
-        ))}
-      </div>
+      <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+        <div
+          ref={setNodeRef}
+          className={`flex flex-1 flex-col gap-2 overflow-y-auto p-2 ${tasks.length === 0 ? (isOver ? "phase-drop-zone--active" : "phase-drop-zone") : ""}`}
+        >
+          {tasks.map((task) => (
+            <SortableTaskCard
+              key={task.id}
+              task={task}
+              onTaskClick={onTaskClick}
+              onStatusChange={onStatusChange}
+            />
+          ))}
+        </div>
+      </SortableContext>
     </div>
   );
 }

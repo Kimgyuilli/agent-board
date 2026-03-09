@@ -65,10 +65,10 @@
 
 | 태스크 | 담당 | 상태 | 의존 | 비고 |
 |--------|------|------|------|------|
-| @dnd-kit 드래그앤드롭 통합 | frontend-dev | pending | Phase 3.5 | Phase 간 이동, 순서 변경 |
-| 태스크 상태 변경 UI | frontend-dev | pending | Phase 3.5 | 상태 드롭다운 or 버튼 |
-| 태스크 상세 패널/모달 | frontend-dev | pending | Phase 3.5 | 제목, 설명, 에이전트 편집 |
-| Extension ↔ Webview 양방향 동기화 | backend-dev | pending | Phase 3.5 | 변경 → DB 저장 → UI 갱신 |
+| @dnd-kit 드래그앤드롭 통합 | frontend-dev | done | Phase 3.5 | DndContext + SortableContext + DragOverlay |
+| 태스크 상태 변경 UI | frontend-dev | done | Phase 3.5 | StatusDropdown 컴포넌트 |
+| 태스크 상세 패널/모달 | frontend-dev | done | Phase 3.5 | TaskDetailModal + useTaskDetail 훅 |
+| Extension ↔ Webview 양방향 동기화 | frontend-dev | done | Phase 3.5 | useTaskActions + 낙관적 업데이트 (백엔드는 Phase 3.5에서 완료) |
 
 ## Phase 5: 실시간 모니터링 + 에이전트 활동
 

@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type {
   Phase,
   Task,
   ExtensionToWebviewMessage,
+  WebviewToExtensionMessage,
 } from "@agent-board/shared";
 import { useVSCodeApi } from "./useVSCodeApi";
 
@@ -10,6 +11,7 @@ export function useBoardData() {
   const [phases, setPhases] = useState<Phase[] | null>(null);
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const snapshotRef = useRef<Task[] | null>(null);
 
   const handleMessage = useCallback((msg: ExtensionToWebviewMessage) => {
     switch (msg.type) {
@@ -19,6 +21,7 @@ export function useBoardData() {
         setLoading(false);
         break;
       case "tasks-updated":
+        snapshotRef.current = null;
         setTasks((prev) => {
           if (!prev) return msg.tasks;
           if (msg.tasks.length === 1) {
@@ -40,5 +43,28 @@ export function useBoardData() {
     postMessage({ type: "request-refresh" });
   }, [postMessage]);
 
-  return { phases, tasks, loading };
+  const takeSnapshot = useCallback(() => {
+    setTasks((current) => {
+      snapshotRef.current = current;
+      return current;
+    });
+  }, []);
+
+  const applyOptimistic = useCallback((updater: (prev: Task[]) => Task[]) => {
+    setTasks((prev) => (prev ? updater(prev) : prev));
+  }, []);
+
+  const rollback = useCallback(() => {
+    if (snapshotRef.current) {
+      setTasks(snapshotRef.current);
+      snapshotRef.current = null;
+    }
+  }, []);
+
+  const typedPostMessage = useCallback(
+    (msg: WebviewToExtensionMessage) => postMessage(msg),
+    [postMessage],
+  );
+
+  return { phases, tasks, loading, postMessage: typedPostMessage, takeSnapshot, applyOptimistic, rollback };
 }

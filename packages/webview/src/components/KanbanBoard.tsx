@@ -1,13 +1,21 @@
 import { useMemo } from "react";
-import type { Phase, Task } from "@agent-board/shared";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+import type { Phase, Task, TaskStatus } from "@agent-board/shared";
+import type { useDragAndDrop } from "../hooks/useDragAndDrop";
 import PhaseColumn from "./PhaseColumn";
+import DragOverlayCard from "./DragOverlayCard";
+
+type DndState = ReturnType<typeof useDragAndDrop>;
 
 interface KanbanBoardProps {
   phases: Phase[];
   tasks: Task[];
+  dnd: DndState;
+  onTaskClick: (task: Task) => void;
+  onStatusChange: (taskId: number, status: TaskStatus) => void;
 }
 
-export default function KanbanBoard({ phases, tasks }: KanbanBoardProps) {
+export default function KanbanBoard({ phases, tasks, dnd, onTaskClick, onStatusChange }: KanbanBoardProps) {
   const tasksByPhase = useMemo(() => {
     const map = new Map<number, Task[]>();
     for (const task of tasks) {
@@ -30,14 +38,28 @@ export default function KanbanBoard({ phases, tasks }: KanbanBoardProps) {
   );
 
   return (
-    <div className="flex flex-1 gap-3 overflow-x-auto p-3">
-      {sortedPhases.map((phase) => (
-        <PhaseColumn
-          key={phase.id}
-          phase={phase}
-          tasks={tasksByPhase.get(phase.id) ?? []}
-        />
-      ))}
-    </div>
+    <DndContext
+      sensors={dnd.sensors}
+      collisionDetection={dnd.collisionDetection}
+      onDragStart={dnd.handleDragStart}
+      onDragOver={dnd.handleDragOver}
+      onDragEnd={dnd.handleDragEnd}
+      onDragCancel={dnd.handleDragCancel}
+    >
+      <div className="flex flex-1 gap-3 overflow-x-auto p-3">
+        {sortedPhases.map((phase) => (
+          <PhaseColumn
+            key={phase.id}
+            phase={phase}
+            tasks={tasksByPhase.get(phase.id) ?? []}
+            onTaskClick={onTaskClick}
+            onStatusChange={onStatusChange}
+          />
+        ))}
+      </div>
+      <DragOverlay>
+        {dnd.activeTask ? <DragOverlayCard task={dnd.activeTask} /> : null}
+      </DragOverlay>
+    </DndContext>
   );
 }

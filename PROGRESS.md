@@ -2,6 +2,32 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-09 21:00 — frontend-dev (Phase 4 완료)
+### 완료한 작업
+- 드래그앤드롭 + 태스크 인터랙션 구현 (7개 신규 파일 + 5개 수정)
+  - `packages/webview/src/hooks/useTaskActions.ts`: postMessage 래퍼 (moveTask, updateTaskStatus, updateTask)
+  - `packages/webview/src/hooks/useDragAndDrop.ts`: @dnd-kit 센서/충돌감지/이벤트 핸들러 + 낙관적 업데이트
+  - `packages/webview/src/hooks/useTaskDetail.ts`: 모달 열림/닫힘, 편집 폼 상태, isDirty 감지
+  - `packages/webview/src/components/SortableTaskCard.tsx`: useSortable() 래퍼 → TaskCard 렌더링
+  - `packages/webview/src/components/DragOverlayCard.tsx`: DragOverlay 내부 렌더링용 카드 클론
+  - `packages/webview/src/components/StatusDropdown.tsx`: 상태 변경 드롭다운 (4개 상태, ESC/외부클릭 닫힘)
+  - `packages/webview/src/components/TaskDetailModal.tsx`: 태스크 상세 보기/편집 모달
+  - `packages/webview/src/hooks/useBoardData.ts`: 낙관적 업데이트 (takeSnapshot, applyOptimistic, rollback) 추가
+  - `packages/webview/src/components/KanbanBoard.tsx`: DndContext + DragOverlay 래핑
+  - `packages/webview/src/components/PhaseColumn.tsx`: SortableContext + useDroppable + SortableTaskCard
+  - `packages/webview/src/components/TaskCard.tsx`: onClick, onStatusChange, isDragging, isOverlay props 추가
+  - `packages/webview/src/App.tsx`: 훅 통합, TaskDetailModal 렌더링
+  - `packages/webview/src/index.css`: 드래그/드롭/모달/드롭다운/버튼 스타일 추가
+- 검증: 빌드 성공 (206kb), 55/55 테스트 통과, lint 클린
+### 다음 할 일
+- Phase 5 시작: 실시간 모니터링 + 에이전트 활동 (DB 변경 감지, 에이전트 상태 뱃지, Progress Log)
+### 이슈/참고
+- 백엔드(Extension + MCP Server)는 Phase 3.5에서 이미 100% 준비 → 프론트엔드만 구현
+- @dnd-kit/core v6.3.1 + @dnd-kit/sortable v10.0.0 사용
+- PointerSensor distance: 5px로 클릭 vs 드래그 구분
+- 낙관적 업데이트: takeSnapshot → applyOptimistic → tasks-updated 수신 시 snapshot 클리어, 실패 시 rollback
+- StatusDropdown: e.stopPropagation()으로 카드 클릭/드래그 전파 차단
+
 ## 2026-03-09 16:30 — backend-dev (Phase 3.5 리뷰 + 정리)
 ### 완료한 작업
 - 코드 리뷰 후 데드코드 제거 + 개선
