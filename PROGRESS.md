@@ -2,6 +2,21 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-09 16:30 — backend-dev (Phase 3.5 리뷰 + 정리)
+### 완료한 작업
+- 코드 리뷰 후 데드코드 제거 + 개선
+  - `packages/extension/src/services/index.ts`: 삭제 (삭제된 BoardService를 export하는 데드 배럴 파일)
+  - `packages/mcp-server/package.json`: 미사용 `./db` export 제거
+  - `packages/shared/src/ipc.ts`: 미사용 `TypedRpcRequest`, `BoardRpcResult` 타입 제거
+  - `packages/mcp-server/src/board-server.ts`: JSON parse 에러 시 매칭 불가능한 응답(`id:0`) 대신 stderr 로깅
+  - `packages/extension/src/services/ProcessManager.ts`: SIGTERM(Windows 비호환) → stdin.end()로 graceful shutdown
+  - `packages/extension/tsconfig.json`: module을 `preserve`/`bundler`로 변경 (CJS↔ESM type-only import 에러 해결)
+- 검증: 55/55 테스트 통과, lint 클린, 4개 패키지 빌드 성공
+### 다음 할 일
+- Phase 4 시작: @dnd-kit 드래그앤드롭, 태스크 상태 변경 UI, 상세 패널, 양방향 동기화
+### 이슈/참고
+- Extension은 esbuild 번들링이므로 `module: "preserve"` + `moduleResolution: "bundler"`가 Node16보다 적합
+
 ## 2026-03-09 07:00 — backend-dev (Phase 3.5 완료)
 ### 완료한 작업
 - Extension↔MCP Server 프로세스 분리 (7개 태스크 완료)
