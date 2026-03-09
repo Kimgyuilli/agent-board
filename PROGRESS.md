@@ -2,6 +2,29 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-09 07:00 — backend-dev (Phase 3.5 완료)
+### 완료한 작업
+- Extension↔MCP Server 프로세스 분리 (7개 태스크 완료)
+  - `packages/shared/src/ipc.ts`: JSON-RPC 2.0 타입 + BoardRpcMethods 메서드 맵 정의
+  - `packages/mcp-server/src/board-handler.ts`: RPC 디스패치 로직 (핸들러 4개: getInitData, moveTask, updateTaskStatus, updateTask)
+  - `packages/mcp-server/src/board-server.ts`: stdin/stdout ndjson 서버 엔트리포인트 (--db 플래그, readline, graceful shutdown)
+  - `packages/extension/src/services/ProcessManager.ts`: child_process 생명주기 관리 (spawn/kill/restart, 자동 재시작 최대 3회)
+  - `packages/extension/src/services/BoardClient.ts`: IBoardService 인터페이스 + JSON-RPC 클라이언트 (pending 요청 Map, 10초 타임아웃)
+  - `packages/extension/src/extension.ts`: DB 직접 import 제거, BoardClient 사용으로 전환
+  - `packages/extension/src/panels/BoardPanel.ts`: IBoardService 인터페이스 타입 사용
+  - `packages/extension/package.json`: better-sqlite3, @agent-board/mcp-server 의존성 제거, --external:better-sqlite3 제거, prebuild에 board-server.js 복사 추가
+- 삭제 파일: `packages/extension/src/services/BoardService.ts` (BoardClient로 대체)
+- 테스트: 55/55 통과 (기존 48 → board-handler 15개 추가, board-client 5개 추가, board-service 13개 제거)
+- lint 클린, 4개 패키지 빌드 성공
+### 다음 할 일
+- Phase 4 시작: @dnd-kit 드래그앤드롭, 태스크 상태 변경 UI, 상세 패널, 양방향 동기화
+### 이슈/참고
+- **아키텍처**: Extension(Electron) → child_process(시스템 Node.js)로 IPC 분리. better-sqlite3 ABI 충돌 근본 해결
+- **IPC 프로토콜**: Newline-Delimited JSON-RPC 2.0 over stdio
+- **모듈 분리**: board-handler.ts(디스패치 로직) + board-server.ts(I/O 배선) 분리로 단위 테스트 용이
+- **IBoardService 인터페이스**: 동기→비동기 전환. BoardPanel은 인터페이스만 참조하므로 테스트 시 mock 가능
+- Extension 번들 11.4kb (네이티브 모듈 의존 없음), board-server 7.9kb (별도 프로세스)
+
 ## 2026-03-09 06:25 — backend-dev (네이티브 모듈 이슈 대응)
 ### 완료한 작업
 - better-sqlite3 v11→v12 업그레이드 (Electron 39 호환)

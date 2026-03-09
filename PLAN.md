@@ -51,11 +51,13 @@
 
 | 태스크 | 담당 | 상태 | 의존 | 비고 |
 |--------|------|------|------|------|
-| MCP Server에 Extension용 IPC 인터페이스 추가 | backend-dev | pending | Phase 3 | stdio 기반 JSON-RPC 또는 커스텀 프로토콜 |
-| Extension에서 MCP Server child_process 관리 | backend-dev | pending | IPC 인터페이스 | spawn, lifecycle, 재시작 |
-| BoardService를 IPC 클라이언트로 재작성 | backend-dev | pending | child_process 관리 | 직접 DB 호출 → IPC 메시지 기반 |
-| Extension에서 better-sqlite3 의존성 제거 | backend-dev | pending | BoardService 재작성 | package.json, esbuild external 정리 |
-| 기존 테스트 수정 + 통합 테스트 | backend-dev | pending | better-sqlite3 제거 | 48개 테스트 통과 확인 |
+| IPC 프로토콜 타입 정의 (shared/ipc.ts) | backend-dev | done | Phase 3 | JSON-RPC 2.0 + BoardRpcMethods |
+| Board IPC Server 구현 (board-handler.ts + board-server.ts) | backend-dev | done | IPC 타입 | stdin/stdout ndjson, RPC 디스패치 |
+| ProcessManager 구현 | backend-dev | done | IPC 타입 | child_process spawn/kill/restart |
+| BoardClient 구현 (BoardService 대체) | backend-dev | done | ProcessManager | IBoardService 인터페이스, JSON-RPC 클라이언트 |
+| Extension 통합 (extension.ts + BoardPanel) | backend-dev | done | Board Server + BoardClient | DB 직접 import 제거 |
+| 의존성 정리 + 빌드 설정 | backend-dev | done | Extension 통합 | better-sqlite3 제거, prebuild 수정 |
+| 테스트 수정 + 추가 | backend-dev | done | 의존성 정리 | 55개 테스트 통과 (기존 48 → 55) |
 
 ## Phase 4: 드래그앤드롭 + 태스크 인터랙션
 
