@@ -7,7 +7,12 @@ import type {
 } from "@agent-board/shared";
 import { RPC_ERROR } from "@agent-board/shared";
 import type { Task } from "@agent-board/shared";
-import { getOrCreateDefaultProject, listTasks } from "./db/service.js";
+import {
+  getOrCreateDefaultProject,
+  listTasks,
+  getChangesSince,
+  getProgressLogs,
+} from "./db/service.js";
 
 // === RPC 핸들러 ===
 
@@ -101,6 +106,15 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
     db.prepare(`UPDATE tasks SET ${setClauses.join(", ")} WHERE id = ?`).run(...sqlParams);
 
     return { task: db.prepare("SELECT * FROM tasks WHERE id = ?").get(taskId) as Task };
+  },
+
+  getChanges(db, params) {
+    return getChangesSince(db, params.since);
+  },
+
+  getProgressLogs(db, params) {
+    const logs = getProgressLogs(db, params.taskId, params.limit);
+    return { logs };
   },
 };
 

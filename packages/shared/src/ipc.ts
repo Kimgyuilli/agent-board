@@ -1,4 +1,4 @@
-import type { Phase, Task, TaskStatus } from "./models.js";
+import type { Phase, Task, TaskStatus, ProgressLog } from "./models.js";
 
 // === JSON-RPC 2.0 기본 타입 ===
 
@@ -44,6 +44,14 @@ export interface BoardRpcMethods {
       updates: Partial<Pick<Task, "title" | "description" | "assigned_agent">>;
     };
     result: { task: Task };
+  };
+  getChanges: {
+    params: { since: string };
+    result: { tasks: Task[]; logs: ProgressLog[]; timestamp: string };
+  };
+  getProgressLogs: {
+    params: { taskId?: number; limit?: number };
+    result: { logs: ProgressLog[] };
   };
 }
 

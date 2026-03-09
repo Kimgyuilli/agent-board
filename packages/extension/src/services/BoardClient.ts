@@ -3,6 +3,7 @@ import type {
   Phase,
   Task,
   TaskStatus,
+  ProgressLog,
   BoardRpcMethod,
   BoardRpcMethods,
   RpcResponse,
@@ -17,6 +18,8 @@ export interface IBoardService extends vscode.Disposable {
     taskId: number,
     updates: Partial<Pick<Task, "title" | "description" | "assigned_agent">>,
   ): Promise<Task>;
+  getChanges(since: string): Promise<{ tasks: Task[]; logs: ProgressLog[]; timestamp: string }>;
+  getProgressLogs(taskId?: number, limit?: number): Promise<{ logs: ProgressLog[] }>;
 }
 
 interface PendingRequest {
@@ -70,6 +73,14 @@ export class BoardClient implements IBoardService {
   ): Promise<Task> {
     const result = await this._call("updateTask", { taskId, updates });
     return result.task;
+  }
+
+  async getChanges(since: string): Promise<{ tasks: Task[]; logs: ProgressLog[]; timestamp: string }> {
+    return this._call("getChanges", { since });
+  }
+
+  async getProgressLogs(taskId?: number, limit?: number): Promise<{ logs: ProgressLog[] }> {
+    return this._call("getProgressLogs", { taskId, limit });
   }
 
   private _call<M extends BoardRpcMethod>(
