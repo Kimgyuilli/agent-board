@@ -13,6 +13,8 @@ dist/
 
 # Agent Board
 .agent-board/
+.vscode-test/
+e2e/out/
 
 # Environment
 .env
