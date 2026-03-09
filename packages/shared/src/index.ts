@@ -49,8 +49,6 @@ export type {
   RpcResponse,
   BoardRpcMethods,
   BoardRpcMethod,
-  TypedRpcRequest,
-  BoardRpcResult,
 } from "./ipc.js";
 
 export { RPC_ERROR } from "./ipc.js";

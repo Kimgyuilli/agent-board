@@ -49,17 +49,6 @@ export interface BoardRpcMethods {
 
 export type BoardRpcMethod = keyof BoardRpcMethods;
 
-// === 타입-안전 RPC 헬퍼 ===
-
-export interface TypedRpcRequest<M extends BoardRpcMethod> {
-  jsonrpc: "2.0";
-  id: number;
-  method: M;
-  params: BoardRpcMethods[M]["params"];
-}
-
-export type BoardRpcResult<M extends BoardRpcMethod> = BoardRpcMethods[M]["result"];
-
 // === JSON-RPC 에러 코드 ===
 
 export const RPC_ERROR = {

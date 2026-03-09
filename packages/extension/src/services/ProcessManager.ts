@@ -81,8 +81,13 @@ export class ProcessManager implements vscode.Disposable {
 
     if (!this._process) return;
 
-    this._process.kill("SIGTERM");
+    // stdin.end()로 graceful shutdown 트리거 (Windows/Unix 모두 호환)
+    // board-server는 stdin close → DB 정리 → process.exit(0)
+    if (this._process.stdin) {
+      this._process.stdin.end();
+    }
 
+    // stdin close 후에도 종료되지 않으면 강제 종료
     const killTimer = setTimeout(() => {
       if (this._process) {
         this._process.kill("SIGKILL");
