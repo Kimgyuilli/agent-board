@@ -4,14 +4,20 @@ import * as vscode from "vscode";
 suite("Agent Board Extension", () => {
   const extensionId = "agent-board.agent-board";
 
+  function getExtension() {
+    const ext = vscode.extensions.getExtension(extensionId);
+    if (!ext) {
+      throw new Error("Extension not found");
+    }
+    return ext;
+  }
+
   test("Extension should be present", () => {
-    const extension = vscode.extensions.getExtension(extensionId);
-    assert.ok(extension, "Extension not found");
+    getExtension();
   });
 
   test("Extension should activate", async () => {
-    const extension = vscode.extensions.getExtension(extensionId);
-    assert.ok(extension, "Extension not found");
+    const extension = getExtension();
     if (!extension.isActive) {
       await extension.activate();
     }
@@ -27,8 +33,7 @@ suite("Agent Board Extension", () => {
   });
 
   test("View contributes should include boardView", () => {
-    const extension = vscode.extensions.getExtension(extensionId);
-    assert.ok(extension, "Extension not found");
+    const extension = getExtension();
     const pkg = extension.packageJSON;
     const views = pkg.contributes?.views?.["agent-board"];
     assert.ok(Array.isArray(views), "No views in agent-board container");

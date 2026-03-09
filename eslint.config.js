@@ -19,6 +19,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ["**/scripts/**/*.js"],
+    languageOptions: {
+      globals: { console: "readonly", process: "readonly" },
+    },
+  },
+  {
     files: ["packages/webview/src/**/*.{ts,tsx}"],
     plugins: {
       react: reactPlugin,
