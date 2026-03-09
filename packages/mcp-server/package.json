@@ -11,7 +11,7 @@
     }
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --platform=node --packages=external && esbuild src/board-server.ts --bundle --outfile=dist/board-server.js --format=esm --platform=node --packages=external",
+    "build": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --platform=node --packages=external && esbuild src/board-server.ts --bundle --outfile=dist/board-server.js --format=cjs --platform=node --external:better-sqlite3",
     "test": "vitest run",
     "lint": "eslint src/"
   },

@@ -1,5 +1,5 @@
 {
-  "name": "@agent-board/extension",
+  "name": "agent-board",
   "version": "0.0.1",
   "displayName": "Agent Board",
   "description": "AI 에이전트의 개발 태스크를 관리하고 활동을 실시간 모니터링하는 VS Code 확장",
@@ -57,13 +57,23 @@
     "prebuild": "node -e \"import('fs').then(f=>{f.cpSync('../webview/dist','dist/webview',{recursive:true});f.cpSync('../mcp-server/dist/board-server.js','dist/board-server.js');})\"",
     "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
     "test": "vitest run",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "pretest:e2e": "tsc -p e2e/tsconfig.json",
+    "test:e2e": "node e2e/out/runTests.js",
+    "prepackage": "node scripts/prepare-vsix.js",
+    "package": "vsce package --no-dependencies"
   },
   "dependencies": {
-    "@agent-board/shared": "workspace:*"
+    "@agent-board/shared": "workspace:*",
+    "better-sqlite3": "^12.6.2"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.0",
     "@types/vscode": "^1.85.0",
-    "esbuild": "^0.24.0"
+    "@vscode/test-electron": "^2.4.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.24.0",
+    "glob": "^11.0.0",
+    "mocha": "^10.0.0"
   }
 }

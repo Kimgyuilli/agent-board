@@ -1,0 +1,8 @@
+src/**
+e2e/**
+scripts/**
+**/*.test.*
+**/vitest.config.ts
+tsconfig.json
+**/*.map
+.vscode-test/**
