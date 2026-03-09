@@ -41,3 +41,16 @@ export type {
   ListTasksParams,
   ListTasksResult,
 } from "./mcp.js";
+
+export type {
+  RpcRequest,
+  RpcSuccessResponse,
+  RpcErrorResponse,
+  RpcResponse,
+  BoardRpcMethods,
+  BoardRpcMethod,
+  TypedRpcRequest,
+  BoardRpcResult,
+} from "./ipc.js";
+
+export { RPC_ERROR } from "./ipc.js";
