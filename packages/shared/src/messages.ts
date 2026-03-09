@@ -30,11 +30,18 @@ export interface InitDataMessage {
   tasks: Task[];
 }
 
+export interface ProgressLogsResponseMessage {
+  type: "progress-logs-response";
+  taskId: number;
+  logs: ProgressLog[];
+}
+
 export type ExtensionToWebviewMessage =
   | TasksUpdatedMessage
   | PhasesUpdatedMessage
   | AgentStatusChangedMessage
   | ProgressLogAddedMessage
+  | ProgressLogsResponseMessage
   | InitDataMessage;
 
 // === Webview → Extension 메시지 ===
@@ -62,8 +69,14 @@ export interface RequestRefreshMessage {
   type: "request-refresh";
 }
 
+export interface RequestProgressLogsMessage {
+  type: "request-progress-logs";
+  taskId: number;
+}
+
 export type WebviewToExtensionMessage =
   | MoveTaskMessage
   | UpdateTaskStatusMessage
   | UpdateTaskMessage
-  | RequestRefreshMessage;
+  | RequestRefreshMessage
+  | RequestProgressLogsMessage;

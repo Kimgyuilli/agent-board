@@ -1,6 +1,7 @@
 import type { Task, TaskStatus } from "@agent-board/shared";
 import StatusBadge from "./StatusBadge";
 import StatusDropdown from "./StatusDropdown";
+import AgentBadge from "./AgentBadge";
 
 interface TaskCardProps {
   task: Task;
@@ -43,12 +44,7 @@ export default function TaskCard({ task, onClick, onStatusChange, isDragging, is
       )}
 
       {task.assigned_agent && (
-        <p
-          className="text-xs"
-          style={{ color: "var(--vscode-descriptionForeground)" }}
-        >
-          @{task.assigned_agent}
-        </p>
+        <AgentBadge agentId={task.assigned_agent} status={task.status} />
       )}
 
       {task.status === "blocked" && task.blocked_reason && (

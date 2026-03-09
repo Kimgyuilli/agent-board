@@ -319,6 +319,124 @@
   background: var(--vscode-button-secondaryHoverBackground, var(--vscode-toolbar-hoverBackground));
 }
 
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-left: 4px;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 8px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.timeline-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 16px;
+  bottom: 0;
+  width: 1px;
+  background: var(--vscode-panel-border);
+}
+
+.timeline-marker {
+  flex-shrink: 0;
+  width: 12px;
+  display: flex;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.timeline-icon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.timeline-icon--started {
+  color: var(--vscode-progressBar-background);
+}
+
+.timeline-icon--completed {
+  color: var(--vscode-testing-iconPassed);
+}
+
+.timeline-icon--blocked {
+  color: var(--vscode-errorForeground);
+}
+
+.timeline-icon--note {
+  color: var(--vscode-descriptionForeground);
+}
+
+.timeline-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.timeline-label {
+  font-weight: 600;
+  color: var(--vscode-editor-foreground);
+}
+
+.timeline-agent {
+  color: var(--vscode-descriptionForeground);
+}
+
+.timeline-time {
+  margin-left: auto;
+  color: var(--vscode-descriptionForeground);
+  white-space: nowrap;
+}
+
+.timeline-text {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.timeline-empty {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  padding: 8px 0;
+}
+
+/* Agent badge */
+.agent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.agent-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.agent-badge__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Loading spinner */
 .loading-spinner {
   width: 24px;
