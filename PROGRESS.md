@@ -2,6 +2,27 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-10 02:15 — backend-dev + frontend-dev (Phase 6: 테스트)
+### 완료한 작업
+- Extension 단위 테스트 4개 파일 추가 (42개 테스트)
+  - `packages/extension/src/__tests__/helpers/` — fixtures, vscode-mock, board-service-mock
+  - `packages/extension/src/__tests__/process-manager.test.ts` — 12개
+  - `packages/extension/src/__tests__/change-monitor.test.ts` — 10개
+  - `packages/extension/src/__tests__/notification-service.test.ts` — 10개
+  - `packages/extension/src/__tests__/board-panel.test.ts` — 10개
+- Webview 훅/컴포넌트 테스트 10개 파일 추가 (64개 테스트)
+  - `packages/webview/src/__tests__/helpers/` — vscode-api-mock, fixtures
+  - 훅 4개: useBoardData(9), useProgressLogs(6), useTaskDetail(7), useTaskActions(3)
+  - 컴포넌트 6개: StatusBadge(4), AgentBadge(3), TaskCard(10), ProgressTimeline(6), StatusDropdown(5), TaskDetailModal(11)
+- 의존성 추가: @testing-library/react, @testing-library/jest-dom, @testing-library/user-event
+- 전체 161개 테스트 통과 (기존 55 + 신규 106)
+### 다음 할 일
+- E2E 테스트 (@vscode/test-electron)
+- VSIX 패키징 + README
+### 이슈/참고
+- jsdom 환경에서 한글 유니코드 이스케이프 시퀀스 렌더링으로 getByText 실패 → DOM querySelector로 대체
+- vitest 3.2.4에서 `vi.runAllTicksAsync()` 미지원 → 수동 flushPromises 헬퍼 사용
+
 ## 2026-03-09 22:00 — backend-dev + frontend-dev (Phase 5 완료)
 ### 완료한 작업
 - 실시간 모니터링 + 에이전트 활동 구현 (5개 신규 파일 + 11개 수정)
