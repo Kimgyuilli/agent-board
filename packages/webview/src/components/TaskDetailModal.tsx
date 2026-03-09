@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import type { Task, TaskStatus } from "@agent-board/shared";
+import type { Task, TaskStatus, ProgressLog } from "@agent-board/shared";
 import StatusDropdown from "./StatusDropdown";
+import ProgressTimeline from "./ProgressTimeline";
 
 interface EditState {
   title: string;
@@ -16,6 +17,8 @@ interface TaskDetailModalProps {
   onStatusChange: (status: TaskStatus) => void;
   onSave: () => void;
   onClose: () => void;
+  progressLogs?: ProgressLog[];
+  progressLogsLoading?: boolean;
 }
 
 export default function TaskDetailModal({
@@ -26,6 +29,8 @@ export default function TaskDetailModal({
   onStatusChange,
   onSave,
   onClose,
+  progressLogs,
+  progressLogsLoading,
 }: TaskDetailModalProps) {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -86,6 +91,13 @@ export default function TaskDetailModal({
               <p className="text-xs" style={{ color: "var(--vscode-errorForeground)" }}>
                 {task.blocked_reason}
               </p>
+            </div>
+          )}
+
+          {progressLogs !== undefined && (
+            <div className="modal-field">
+              <label className="modal-label">활동 기록</label>
+              <ProgressTimeline logs={progressLogs} loading={progressLogsLoading ?? false} />
             </div>
           )}
 

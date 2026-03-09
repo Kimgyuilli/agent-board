@@ -4,6 +4,7 @@ import { useBoardData } from "./hooks/useBoardData";
 import { useTaskActions } from "./hooks/useTaskActions";
 import { useTaskDetail } from "./hooks/useTaskDetail";
 import { useDragAndDrop } from "./hooks/useDragAndDrop";
+import { useProgressLogs } from "./hooks/useProgressLogs";
 import KanbanBoard from "./components/KanbanBoard";
 import TaskDetailModal from "./components/TaskDetailModal";
 import EmptyState from "./components/EmptyState";
@@ -13,6 +14,7 @@ export default function App() {
     useBoardData();
   const actions = useTaskActions(postMessage);
   const detail = useTaskDetail();
+  const progressLogs = useProgressLogs(detail.selectedTask?.id ?? null, postMessage);
 
   const dnd = useDragAndDrop({
     tasks: tasks ?? [],
@@ -88,6 +90,8 @@ export default function App() {
           }}
           onSave={handleSave}
           onClose={detail.closeTask}
+          progressLogs={progressLogs.logs}
+          progressLogsLoading={progressLogs.loading}
         />
       )}
     </div>

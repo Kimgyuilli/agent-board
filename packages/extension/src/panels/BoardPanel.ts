@@ -66,6 +66,15 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
           this.postMessage({ type: "tasks-updated", tasks: [task] });
           break;
         }
+        case "request-progress-logs": {
+          const result = await this._service.getProgressLogs(message.taskId);
+          this.postMessage({
+            type: "progress-logs-response",
+            taskId: message.taskId,
+            logs: result.logs,
+          });
+          break;
+        }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
