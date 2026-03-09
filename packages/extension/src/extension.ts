@@ -1,9 +1,8 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { getDatabase, closeDatabase } from "@agent-board/mcp-server/db";
 import { BoardPanelProvider } from "./panels/BoardPanel.js";
-import { BoardService } from "./services/BoardService.js";
+import { BoardClient } from "./services/BoardClient.js";
 
 function resolveDbPath(context: vscode.ExtensionContext): string {
   const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -17,13 +16,21 @@ function resolveDbPath(context: vscode.ExtensionContext): string {
   return path.join(dir, "board.db");
 }
 
+function resolveServerPath(context: vscode.ExtensionContext): string {
+  return path.join(context.extensionUri.fsPath, "dist", "board-server.js");
+}
+
+let boardClient: BoardClient | undefined;
+
 export function activate(context: vscode.ExtensionContext): void {
   const dbPath = resolveDbPath(context);
-  const db = getDatabase(dbPath);
-  const boardService = new BoardService(db);
+  const serverPath = resolveServerPath(context);
+  const outputChannel = vscode.window.createOutputChannel("Agent Board");
+
+  boardClient = new BoardClient(serverPath, dbPath, outputChannel);
 
   const webviewDistUri = vscode.Uri.joinPath(context.extensionUri, "dist", "webview");
-  const provider = new BoardPanelProvider(context.extensionUri, webviewDistUri, boardService);
+  const provider = new BoardPanelProvider(context.extensionUri, webviewDistUri, boardClient);
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider("agent-board.boardView", provider),
@@ -34,8 +41,12 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.commands.executeCommand("agent-board.boardView.focus");
     }),
   );
+
+  context.subscriptions.push(boardClient);
+  context.subscriptions.push(outputChannel);
 }
 
 export function deactivate(): void {
-  closeDatabase();
+  boardClient?.dispose();
+  boardClient = undefined;
 }

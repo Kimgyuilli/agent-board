@@ -3,7 +3,7 @@ import type {
   ExtensionToWebviewMessage,
   WebviewToExtensionMessage,
 } from "@agent-board/shared";
-import type { BoardService } from "../services/BoardService.js";
+import type { IBoardService } from "../services/BoardClient.js";
 
 export class BoardPanelProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -11,7 +11,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private readonly _webviewDistUri: vscode.Uri,
-    private readonly _service: BoardService,
+    private readonly _service: IBoardService,
   ) {}
 
   public resolveWebviewView(
@@ -43,12 +43,12 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
     try {
       switch (message.type) {
         case "request-refresh": {
-          const data = this._service.getInitData();
+          const data = await this._service.getInitData();
           this.postMessage({ type: "init-data", ...data });
           break;
         }
         case "move-task": {
-          const tasks = this._service.moveTask(
+          const tasks = await this._service.moveTask(
             message.taskId,
             message.targetPhaseId,
             message.position,
@@ -57,12 +57,12 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "update-task-status": {
-          const task = this._service.updateTaskStatus(message.taskId, message.status);
+          const task = await this._service.updateTaskStatus(message.taskId, message.status);
           this.postMessage({ type: "tasks-updated", tasks: [task] });
           break;
         }
         case "update-task": {
-          const task = this._service.updateTask(message.taskId, message.updates);
+          const task = await this._service.updateTask(message.taskId, message.updates);
           this.postMessage({ type: "tasks-updated", tasks: [task] });
           break;
         }
