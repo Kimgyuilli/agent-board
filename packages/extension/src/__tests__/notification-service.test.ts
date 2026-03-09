@@ -9,18 +9,20 @@ const getConfiguration = vi.fn(() => ({
 }));
 const executeCommand = vi.fn();
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 vi.mock("vscode", () => ({
   window: {
-    showInformationMessage: (...args: unknown[]) => showInformationMessage(...args),
-    showWarningMessage: (...args: unknown[]) => showWarningMessage(...args),
+    showInformationMessage: (...args: any[]) => showInformationMessage(...args),
+    showWarningMessage: (...args: any[]) => showWarningMessage(...args),
   },
   workspace: {
-    getConfiguration: (...args: unknown[]) => getConfiguration(...args),
+    getConfiguration: (...args: any[]) => getConfiguration(...args),
   },
   commands: {
-    executeCommand: (...args: unknown[]) => executeCommand(...args),
+    executeCommand: (...args: any[]) => executeCommand(...args),
   },
 }));
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 import { NotificationService } from "../services/NotificationService.js";
 

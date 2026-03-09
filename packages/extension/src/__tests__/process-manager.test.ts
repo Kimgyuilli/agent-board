@@ -8,7 +8,8 @@ let spawnResult: ReturnType<typeof createFakeProcess>;
 const spawnMock = vi.fn(() => spawnResult);
 
 vi.mock("child_process", () => ({
-  spawn: (...args: unknown[]) => spawnMock(...args),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  spawn: (...args: any[]) => spawnMock(...args),
 }));
 
 vi.mock("vscode", () => ({}));
@@ -26,9 +27,10 @@ class FakeStdin extends Writable {
     cb();
   }
 
-  end(...args: unknown[]) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  override end(...args: any[]) {
     this.ended = true;
-    return super.end(...(args as []));
+    return super.end(...args);
   }
 }
 
@@ -70,7 +72,8 @@ function createFakeProcess() {
       emitter.once(event, cb);
       return spawnResult;
     }),
-    emit: (event: string, ...args: unknown[]) => emitter.emit(event, ...args),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    emit: (event: string, ...args: any[]) => emitter.emit(event, ...args),
     _emitter: emitter,
   };
 }

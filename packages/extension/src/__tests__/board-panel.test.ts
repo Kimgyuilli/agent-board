@@ -7,7 +7,8 @@ const showErrorMessage = vi.fn();
 
 vi.mock("vscode", () => ({
   window: {
-    showErrorMessage: (...args: unknown[]) => showErrorMessage(...args),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    showErrorMessage: (...args: any[]) => showErrorMessage(...args),
   },
   Uri: {
     file: (p: string) => ({ path: p.replace(/\\/g, "/"), fsPath: p }),
