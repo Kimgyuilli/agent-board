@@ -2,6 +2,42 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-09 22:00 — backend-dev + frontend-dev (Phase 5 완료)
+### 완료한 작업
+- 실시간 모니터링 + 에이전트 활동 구현 (5개 신규 파일 + 11개 수정)
+  - **5.1 RPC 메서드 추가**
+    - `packages/shared/src/ipc.ts`: `getChanges`, `getProgressLogs` 메서드 타입 추가
+    - `packages/mcp-server/src/db/service.ts`: `getChangesSince()`, `getProgressLogs()` 함수 추가
+    - `packages/mcp-server/src/board-handler.ts`: 핸들러 2개 추가
+    - `packages/extension/src/services/BoardClient.ts`: IBoardService 확장, 메서드 2개 추가
+  - **5.2 ChangeMonitor 서비스**
+    - `packages/extension/src/services/ChangeMonitor.ts` (신규 ~110줄): WAL 파일 감시 + 500ms 디바운스 + 30초 idle 시 5초 폴백 폴링
+  - **5.3 에이전트 활동 뱃지**
+    - `packages/webview/src/components/AgentBadge.tsx` (신규 ~30줄): 상태별 색상 점 + 에이전트 ID
+    - `packages/webview/src/components/TaskCard.tsx`: AgentBadge 컴포넌트 적용
+    - `packages/webview/src/hooks/useBoardData.ts`: progressLogs 상태 + progress-log-added 핸들러
+    - `packages/webview/src/index.css`: 에이전트 뱃지 + 타임라인 스타일
+  - **5.4 Progress Log 타임라인**
+    - `packages/webview/src/components/ProgressTimeline.tsx` (신규 ~70줄): 세로 타임라인 (아이콘 + 에이전트 + 상대시간 + 내용)
+    - `packages/webview/src/hooks/useProgressLogs.ts` (신규 ~40줄): 태스크별 로그 요청 + 실시간 갱신
+    - `packages/webview/src/components/TaskDetailModal.tsx`: ProgressTimeline 섹션 추가
+    - `packages/webview/src/App.tsx`: useProgressLogs 통합
+    - `packages/shared/src/messages.ts`: RequestProgressLogsMessage + ProgressLogsResponseMessage 추가
+    - `packages/extension/src/panels/BoardPanel.ts`: request-progress-logs 핸들러
+  - **5.5 VS Code 알림**
+    - `packages/extension/src/services/NotificationService.ts` (신규 ~50줄): 완료/차단 알림 + 중복 방지
+    - `packages/extension/package.json`: contributes.configuration (알림 on/off 설정)
+    - `packages/extension/src/extension.ts`: ChangeMonitor + NotificationService 통합
+- 검증: 55/55 테스트 통과, lint 클린, 3개 패키지 빌드 성공
+### 다음 할 일
+- Phase 6 시작: Extension 단위 테스트, Webview 컴포넌트 테스트, E2E 테스트, VSIX 패키징
+### 이슈/참고
+- **아키텍처**: WAL 파일 감시 → 디바운스 → getChanges RPC → Webview 푸시 (Hybrid Change Detection)
+- 폴백 폴링: WAL 이벤트 30초 미수신 시 5초 간격 폴링으로 전환
+- NotificationService: Set 기반 중복 방지 (1000개 초과 시 오래된 500개 정리)
+- useProgressLogs: 독립 window.addEventListener로 progress-logs-response 수신
+- Extension 번들 16.9kb, Webview 번들 209kb (CSS 13.7kb)
+
 ## 2026-03-09 21:00 — frontend-dev (Phase 4 완료)
 ### 완료한 작업
 - 드래그앤드롭 + 태스크 인터랙션 구현 (7개 신규 파일 + 5개 수정)

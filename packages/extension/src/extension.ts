@@ -3,6 +3,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { BoardPanelProvider } from "./panels/BoardPanel.js";
 import { BoardClient } from "./services/BoardClient.js";
+import { ChangeMonitor } from "./services/ChangeMonitor.js";
+import { NotificationService } from "./services/NotificationService.js";
 
 function resolveDbPath(context: vscode.ExtensionContext): string {
   const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -42,6 +44,36 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
+  // Change Monitor + Notification Service
+  const notificationService = new NotificationService();
+  let cachedTasks: import("@agent-board/shared").Task[] = [];
+
+  // Cache tasks on init
+  boardClient.getInitData().then((data) => {
+    cachedTasks = data.tasks;
+  }).catch(() => { /* ignore init error */ });
+
+  const changeMonitor = new ChangeMonitor(
+    dbPath,
+    boardClient,
+    (tasks) => {
+      cachedTasks = cachedTasks.map((ct) => {
+        const updated = tasks.find((t) => t.id === ct.id);
+        return updated ?? ct;
+      });
+      provider.postMessage({ type: "tasks-updated", tasks });
+    },
+    (logs) => {
+      for (const log of logs) {
+        provider.postMessage({ type: "progress-log-added", log });
+        notificationService.notify(log, cachedTasks);
+      }
+    },
+    outputChannel,
+  );
+  changeMonitor.start();
+
+  context.subscriptions.push(changeMonitor);
   context.subscriptions.push(boardClient);
   context.subscriptions.push(outputChannel);
 }

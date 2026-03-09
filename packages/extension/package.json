@@ -27,6 +27,21 @@
         }
       ]
     },
+    "configuration": {
+      "title": "Agent Board",
+      "properties": {
+        "agentBoard.notifications.taskCompleted": {
+          "type": "boolean",
+          "default": true,
+          "description": "태스크 완료 시 알림 표시"
+        },
+        "agentBoard.notifications.taskBlocked": {
+          "type": "boolean",
+          "default": true,
+          "description": "태스크 차단 시 알림 표시"
+        }
+      }
+    },
     "views": {
       "agent-board": [
         {

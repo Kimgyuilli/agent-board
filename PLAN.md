@@ -76,10 +76,11 @@
 
 | 태스크 | 담당 | 상태 | 의존 | 비고 |
 |--------|------|------|------|------|
-| DB 변경 감지 (file watcher / polling) | backend-dev | pending | Phase 4 | MCP Server의 DB 변경을 Extension이 감지 |
-| 에이전트 활동 표시 | frontend-dev | pending | DB 변경 감지 | 에이전트별 상태 뱃지, 현재 작업 표시 |
-| Progress Log 타임라인 | frontend-dev | pending | DB 변경 감지 | 태스크별 활동 로그 표시 |
-| 알림 (Notification) | backend-dev | pending | DB 변경 감지 | 태스크 완료/블록 시 VS Code 알림 |
+| RPC 메서드 추가 (getChanges, getProgressLogs) | backend-dev | done | Phase 4 | ipc.ts, service.ts, board-handler.ts, BoardClient.ts |
+| DB 변경 감지 (ChangeMonitor) | backend-dev | done | RPC 메서드 | WAL 감시 + 디바운스 + 폴백 폴링 |
+| 에이전트 활동 표시 (AgentBadge) | frontend-dev | done | RPC 메서드 | 에이전트별 상태 뱃지 + useBoardData 확장 |
+| Progress Log 타임라인 | frontend-dev | done | 에이전트 활동 표시 | ProgressTimeline + useProgressLogs + TaskDetailModal 통합 |
+| 알림 (NotificationService) | backend-dev | done | ChangeMonitor | 태스크 완료/블록 시 VS Code 알림 + 설정 |
 
 ## Phase 6: 테스트 + 패키징
 
