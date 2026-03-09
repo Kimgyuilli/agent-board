@@ -39,18 +39,15 @@
     }
   },
   "scripts": {
-    "prebuild": "node -e \"import('fs').then(f=>f.cpSync('../webview/dist','dist/webview',{recursive:true}))\"",
-    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --external:better-sqlite3 --format=cjs --platform=node",
+    "prebuild": "node -e \"import('fs').then(f=>{f.cpSync('../webview/dist','dist/webview',{recursive:true});f.cpSync('../mcp-server/dist/board-server.js','dist/board-server.js');})\"",
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
     "test": "vitest run",
     "lint": "eslint src/"
   },
   "dependencies": {
-    "@agent-board/mcp-server": "workspace:*",
-    "@agent-board/shared": "workspace:*",
-    "better-sqlite3": "^12.6.2"
+    "@agent-board/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.0",
     "@types/vscode": "^1.85.0",
     "esbuild": "^0.24.0"
   }
