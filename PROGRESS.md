@@ -2,6 +2,31 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-10 06:50 — backend-dev (Phase 6 완료: E2E 테스트 + VSIX 패키징)
+### 완료한 작업
+- **E2E 테스트 인프라** (4개 신규 파일)
+  - `packages/extension/e2e/tsconfig.json`: CommonJS + ES2022 타겟 (Mocha 러너 요구)
+  - `packages/extension/e2e/runTests.ts`: @vscode/test-electron 실행 + 임시 workspace 생성
+  - `packages/extension/e2e/suite/index.ts`: Mocha 러너 (bdd, timeout 30s, glob 수집)
+  - `packages/extension/e2e/suite/extension.test.ts`: 4개 테스트 (활성화, 커맨드 등록, 실행, View contributes)
+  - `packages/extension/vitest.config.ts`: e2e/ 디렉토리 제외 추가
+- **VSIX 패키징** (5개 신규 파일 + 2개 수정)
+  - `packages/mcp-server/package.json`: board-server esbuild `--packages=external` → `--external:better-sqlite3` + `--format=cjs` (shared 인라인)
+  - `packages/extension/.vscodeignore`: src/, e2e/, scripts/, test, map 파일 제외
+  - `packages/extension/README.md`: 기능, 요구사항, MCP 도구, 설정, 명령어 문서
+  - `packages/extension/CHANGELOG.md`: 0.0.1 초기 릴리스
+  - `packages/extension/scripts/prepare-vsix.js`: better-sqlite3 + bindings + file-uri-to-path를 dist/node_modules/에 복사
+  - `packages/extension/package.json`: name → `agent-board` (vsce 호환), better-sqlite3 의존성, @vscode/vsce, mocha, glob, @vscode/test-electron, prepackage/package 스크립트
+- 검증: 161/161 테스트 통과, 4개 패키지 빌드 성공, board-server.js에 @agent-board/shared 참조 없음
+- VSIX: agent-board-0.0.1.vsix (78파일, 3.61MB)
+### 다음 할 일
+- Phase 6 전체 완료. 추가 개선 사항 검토.
+### 이슈/참고
+- **vsce + pnpm**: pnpm symlink를 vsce가 해석 못함 → `--no-dependencies` + prepare-vsix.js로 dist/node_modules에 직접 복사
+- **board-server.js 포맷 변경**: ESM → CJS (Node.js child_process에서 require("better-sqlite3") 해석 필요)
+- **Extension name 변경**: `@agent-board/extension` → `agent-board` (vsce가 scoped name 거부)
+- E2E 테스트는 `pnpm pretest:e2e && pnpm test:e2e`로 실행 (VS Code 인스턴스 필요)
+
 ## 2026-03-10 02:15 — backend-dev + frontend-dev (Phase 6: 테스트)
 ### 완료한 작업
 - Extension 단위 테스트 4개 파일 추가 (42개 테스트)

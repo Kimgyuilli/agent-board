@@ -90,5 +90,5 @@
 |--------|------|------|------|------|
 | Extension 단위 테스트 | backend-dev | done | Phase 4 | ProcessManager(12), ChangeMonitor(10), NotificationService(10), BoardPanel(10) |
 | Webview 컴포넌트/훅 테스트 | frontend-dev | done | Phase 4 | 훅 4개(25), 컴포넌트 6개(39) — @testing-library/react |
-| E2E 테스트 | backend-dev | pending | Phase 5 | @vscode/test-electron |
-| VSIX 패키징 + README | backend-dev | pending | E2E 테스트 | vsce package |
+| E2E 테스트 | backend-dev | done | Phase 5 | @vscode/test-electron, Mocha, 4개 테스트 |
+| VSIX 패키징 + README | backend-dev | done | E2E 테스트 | vsce package --no-dependencies, 3.61MB |
