@@ -3,7 +3,7 @@
   "name": "agent-board",
   "type": "module",
   "scripts": {
-    "build": "pnpm -r --workspace-concurrency=1 run build",
+    "build": "pnpm --filter @agent-board/shared build && pnpm --filter \"!@agent-board/shared\" -r run build",
     "test": "vitest run",
     "lint": "pnpm -r run lint"
   },
