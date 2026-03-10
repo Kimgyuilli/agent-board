@@ -60,10 +60,6 @@ export type BoardRpcMethod = keyof BoardRpcMethods;
 // === JSON-RPC 에러 코드 ===
 
 export const RPC_ERROR = {
-  PARSE_ERROR: -32700,
-  INVALID_REQUEST: -32600,
   METHOD_NOT_FOUND: -32601,
-  INVALID_PARAMS: -32602,
-  INTERNAL_ERROR: -32603,
   SERVER_ERROR: -32000,
 } as const;

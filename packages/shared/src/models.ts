@@ -6,10 +6,6 @@ export type TaskStatus = "pending" | "in_progress" | "done" | "blocked";
 
 export type ProgressLogType = "started" | "completed" | "blocked" | "note";
 
-// === 에이전트 상태 ===
-
-export type AgentStatus = "active" | "idle" | "waiting" | "permission";
-
 // === DB 모델 ===
 
 export interface Project {
@@ -38,11 +34,6 @@ export interface Task {
   position: number;
   created_at: string;
   updated_at: string;
-}
-
-export interface TaskDependency {
-  task_id: number;
-  depends_on_task_id: number;
 }
 
 export interface ProgressLog {

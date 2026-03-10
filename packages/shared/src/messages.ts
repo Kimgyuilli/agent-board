@@ -1,4 +1,4 @@
-import type { AgentStatus, Task, Phase, ProgressLog } from "./models.js";
+import type { Task, Phase, ProgressLog } from "./models.js";
 
 // === Extension → Webview 메시지 ===
 
@@ -10,13 +10,6 @@ export interface TasksUpdatedMessage {
 export interface PhasesUpdatedMessage {
   type: "phases-updated";
   phases: Phase[];
-}
-
-export interface AgentStatusChangedMessage {
-  type: "agent-status-changed";
-  agentId: string;
-  status: AgentStatus;
-  currentActivity: string | null;
 }
 
 export interface ProgressLogAddedMessage {
@@ -39,7 +32,6 @@ export interface ProgressLogsResponseMessage {
 export type ExtensionToWebviewMessage =
   | TasksUpdatedMessage
   | PhasesUpdatedMessage
-  | AgentStatusChangedMessage
   | ProgressLogAddedMessage
   | ProgressLogsResponseMessage
   | InitDataMessage;

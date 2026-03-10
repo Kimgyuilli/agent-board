@@ -1,11 +1,9 @@
 export type {
   TaskStatus,
   ProgressLogType,
-  AgentStatus,
   Project,
   Phase,
   Task,
-  TaskDependency,
   ProgressLog,
 } from "./models.js";
 
@@ -14,7 +12,6 @@ export type {
   WebviewToExtensionMessage,
   TasksUpdatedMessage,
   PhasesUpdatedMessage,
-  AgentStatusChangedMessage,
   ProgressLogAddedMessage,
   InitDataMessage,
   MoveTaskMessage,
