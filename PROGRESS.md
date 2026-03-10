@@ -2,6 +2,55 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-10 — claude-opus (코드 리뷰 30개 이슈 개선)
+### 완료한 작업
+- **종합 코드 리뷰 30개 이슈 (Critical 12 + Warning 18) 전체 수정**
+
+#### Batch 1: shared 타입 + 빌드 기반
+- `packages/shared/src/index.ts`: `ProgressLogsResponseMessage`, `RequestProgressLogsMessage` export 추가
+- 루트 `package.json`: `pnpm -r --workspace-concurrency=1 run build` (빌드 순서 보장)
+
+#### Batch 2: mcp-server 핵심 수정 (7개)
+- `packages/mcp-server/src/db/service.ts` 455줄 → 3파일 분리 + barrel re-export
+  - `db/project-service.ts` (~70줄), `db/task-service.ts` (~300줄), `db/progress-service.ts` (~60줄)
+- `db/cycle-detection.ts` 신규: BFS 순환 의존성 탐지, `addTask`에서 호출
+- `db/connection.ts`: 싱글톤 DB 경로 변경 시 재생성
+- `board-server.ts`: DB 경로 검증 (`path.resolve` + 디렉토리 존재 + `.db` 확장자)
+- `index.ts`: `safeCall` 고차함수로 8개 핸들러 try-catch 추상화
+- `board-handler.ts`: `String(taskId)` 제거, 타입 수정
+
+#### Batch 3: extension 수정 (11개)
+- `BoardPanel.ts`: CSP `'unsafe-inline'` 제거, `onDidReceiveMessage` Disposable 등록, `onDidDispose` 정리
+- `extension.ts`: 태스크 캐시 Map 기반 merge, 초기화 race condition 에러 로깅
+- `BoardClient.ts`: 타이머 누수 수정 (send 성공 후 생성), `DEFAULT_TIMEOUT_MS` rename
+- `ProcessManager.ts`: spawn 에러 상태 정리, exponential backoff (1s→2s→4s), graceful shutdown 5초
+- `ChangeMonitor.ts`: `_lastWatcherEvent = Date.now()` 초기화
+- `NotificationService.ts`: `Map<number, number>` TTL(5분) 기반 중복 방지
+
+#### Batch 4: webview 수정 (8개)
+- `useVSCodeApi.ts`: message origin 검증 (`vscode-webview://`)
+- `useProgressLogs.ts`: `window.addEventListener` 제거 → `handleMessage` 콜백 export
+- `useBoardData.ts`: `progressLogs` 제거, `progressHandlerRef` 위임, Map 기반 tasks merge
+- `useDragAndDrop.ts`: `reorderTasksInPhase` 헬퍼 추출
+- `constants/status.ts` 신규: `statusLabels`, `statusClassNames` 중앙 정의
+- `StatusBadge.tsx`, `StatusDropdown.tsx`: 상수 import 통합
+- `TaskDetailModal.tsx`: `role="dialog"`, `aria-modal`, focus trap
+- `TaskCard.tsx`: Enter/Space 키보드 이벤트
+
+#### Batch 5: prepare-vsix
+- `prepare-vsix.js`: 하드코딩 버전 → `findPnpmPackage()` 동적 탐지
+
+#### Batch 6: 테스트 업데이트
+- 6개 테스트 파일 수정 + cycle detection 테스트 2개 추가
+- **검증: 163/163 테스트 통과, lint 클린, 4개 패키지 빌드 성공**
+
+### 다음 할 일
+- 추가 개선 사항 검토 또는 새 기능 개발
+### 이슈/참고
+- 신규 파일 5개: project-service.ts, task-service.ts, progress-service.ts, cycle-detection.ts, constants/status.ts
+- 수정 파일 24개 (테스트 6개 포함)
+- 테스트 2개 순증 (161 → 163)
+
 ## 2026-03-10 06:50 — backend-dev (Phase 6 완료: E2E 테스트 + VSIX 패키징)
 ### 완료한 작업
 - **E2E 테스트 인프라** (4개 신규 파일)
