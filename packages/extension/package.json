@@ -4,6 +4,10 @@
   "displayName": "Agent Board",
   "description": "AI 에이전트의 개발 태스크를 관리하고 활동을 실시간 모니터링하는 VS Code 확장",
   "publisher": "agent-board",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kimgyuilli/agent-board"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },

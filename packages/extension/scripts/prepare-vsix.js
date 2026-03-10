@@ -25,10 +25,16 @@ function findPnpmPackage(packageName) {
   const pnpmDir = resolve(monoRoot, "node_modules", ".pnpm");
   if (!existsSync(pnpmDir)) return null;
   const entries = readdirSync(pnpmDir);
-  const match = entries.find((e) => e.startsWith(`${packageName}@`));
-  if (!match) return null;
-  const candidate = resolve(pnpmDir, match, "node_modules", packageName);
-  return existsSync(candidate) ? candidate : null;
+  const matches = entries
+    .filter((e) => e.startsWith(`${packageName}@`))
+    .sort()
+    .reverse(); // highest version first
+  if (matches.length === 0) return null;
+  for (const match of matches) {
+    const candidate = resolve(pnpmDir, match, "node_modules", packageName);
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
 }
 
 const candidates = [
@@ -56,7 +62,7 @@ if (existsSync(destDir)) {
   rmSync(destDir, { recursive: true, force: true });
 }
 mkdirSync(resolve(distDir, "node_modules"), { recursive: true });
-cpSync(sourceDir, destDir, { recursive: true });
+cpSync(sourceDir, destDir, { recursive: true, dereference: true });
 
 // Also copy bindings (peer dependency of better-sqlite3)
 const bindingsCandidates = [
@@ -70,7 +76,7 @@ for (const candidate of bindingsCandidates) {
     if (existsSync(bindingsDest)) {
       rmSync(bindingsDest, { recursive: true, force: true });
     }
-    cpSync(candidate, bindingsDest, { recursive: true });
+    cpSync(candidate, bindingsDest, { recursive: true, dereference: true });
     console.log(`Copied bindings from ${candidate}`);
     break;
   }
@@ -88,7 +94,7 @@ for (const candidate of fileUriCandidates) {
     if (existsSync(dest)) {
       rmSync(dest, { recursive: true, force: true });
     }
-    cpSync(candidate, dest, { recursive: true });
+    cpSync(candidate, dest, { recursive: true, dereference: true });
     console.log(`Copied file-uri-to-path from ${candidate}`);
     break;
   }
