@@ -21,6 +21,8 @@ export type {
   UpdateTaskStatusMessage,
   UpdateTaskMessage,
   RequestRefreshMessage,
+  ProgressLogsResponseMessage,
+  RequestProgressLogsMessage,
 } from "./messages.js";
 
 export type {
