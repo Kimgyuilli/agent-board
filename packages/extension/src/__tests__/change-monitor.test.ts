@@ -150,9 +150,8 @@ describe("ChangeMonitor", () => {
 
     monitor.start();
 
-    // No watcher events — advance past fallback poll interval (5s)
-    // The fallback checks if idle >= 30s OR lastWatcherEvent === 0
-    vi.advanceTimersByTime(5000);
+    // Advance past idle threshold (30s) so the next poll interval triggers a fallback
+    vi.advanceTimersByTime(35000);
     await flushPromises();
 
     expect(boardService.getChanges).toHaveBeenCalled();

@@ -78,21 +78,37 @@ describe("NotificationService", () => {
     expect(showInformationMessage).toHaveBeenCalledTimes(1);
   });
 
-  it("should prune seen IDs when exceeding 1000", () => {
+  it("should prune seen IDs when exceeding max size via TTL", () => {
     const task = createTask({ title: "Prune" });
 
-    // Add 1001 unique logs
-    for (let i = 1; i <= 1001; i++) {
+    // Add 501 unique logs (exceeds MAX_SEEN_SIZE of 500)
+    // Use Date.now mock to make early entries expired
+    const realDateNow = Date.now;
+    let currentTime = realDateNow.call(Date);
+    vi.spyOn(Date, "now").mockImplementation(() => currentTime);
+
+    for (let i = 1; i <= 501; i++) {
       const log = createProgressLog({ id: i, task_id: task.id, type: "completed" });
       svc.notify(log, [task]);
     }
 
-    // The early IDs should be pruned. Re-notifying with id=1 should work again
+    expect(showInformationMessage).toHaveBeenCalledTimes(501);
+
+    // Advance time past TTL (5 minutes) so old entries are evicted
+    currentTime += 6 * 60 * 1000;
+
+    // Add one more to trigger eviction
+    const triggerLog = createProgressLog({ id: 502, task_id: task.id, type: "completed" });
+    svc.notify(triggerLog, [task]);
+
+    // Re-notifying with id=1 should work (it was evicted by TTL)
     const log = createProgressLog({ id: 1, task_id: task.id, type: "completed" });
     svc.notify(log, [task]);
 
-    // 1001 + 1 = 1002 total calls (id 1 was pruned and re-added)
-    expect(showInformationMessage).toHaveBeenCalledTimes(1002);
+    // 501 + 1 + 1 = 503 total calls
+    expect(showInformationMessage).toHaveBeenCalledTimes(503);
+
+    vi.spyOn(Date, "now").mockRestore();
   });
 
   it("should not notify when config is disabled", () => {

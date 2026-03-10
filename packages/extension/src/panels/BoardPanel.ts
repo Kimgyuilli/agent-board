@@ -28,8 +28,13 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage((message: WebviewToExtensionMessage) => {
+    const messageDisposable = webviewView.webview.onDidReceiveMessage((message: WebviewToExtensionMessage) => {
       this._handleMessage(message);
+    });
+
+    webviewView.onDidDispose(() => {
+      messageDisposable.dispose();
+      this._view = undefined;
     });
   }
 
@@ -97,7 +102,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${webview.cspSource};">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; font-src ${webview.cspSource};">
   <link rel="stylesheet" href="${styleUri}">
   <title>Agent Board</title>
 </head>

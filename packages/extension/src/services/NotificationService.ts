@@ -1,17 +1,24 @@
 import * as vscode from "vscode";
 import type { ProgressLog, Task } from "@agent-board/shared";
 
+const SEEN_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_SEEN_SIZE = 500;
+
 export class NotificationService {
-  private _seenLogIds = new Set<number>();
+  private _seenLogs = new Map<number, number>();
 
   notify(log: ProgressLog, tasks: Task[]): void {
-    if (this._seenLogIds.has(log.id)) return;
-    this._seenLogIds.add(log.id);
+    if (this._seenLogs.has(log.id)) return;
+    this._seenLogs.set(log.id, Date.now());
 
-    // Evict old IDs to prevent unbounded growth
-    if (this._seenLogIds.size > 1000) {
-      const arr = [...this._seenLogIds];
-      this._seenLogIds = new Set(arr.slice(-500));
+    // Evict expired entries when exceeding max size
+    if (this._seenLogs.size > MAX_SEEN_SIZE) {
+      const now = Date.now();
+      for (const [id, ts] of this._seenLogs) {
+        if (now - ts > SEEN_TTL_MS) {
+          this._seenLogs.delete(id);
+        }
+      }
     }
 
     const task = tasks.find((t) => t.id === log.task_id);

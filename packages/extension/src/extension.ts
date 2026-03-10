@@ -51,16 +51,17 @@ export function activate(context: vscode.ExtensionContext): void {
   // Cache tasks on init
   boardClient.getInitData().then((data) => {
     cachedTasks = data.tasks;
-  }).catch(() => { /* ignore init error */ });
+  }).catch((err) => { outputChannel.appendLine(`[init] ${err instanceof Error ? err.message : String(err)}`); });
 
   const changeMonitor = new ChangeMonitor(
     dbPath,
     boardClient,
     (tasks) => {
-      cachedTasks = cachedTasks.map((ct) => {
-        const updated = tasks.find((t) => t.id === ct.id);
-        return updated ?? ct;
-      });
+      const taskMap = new Map(cachedTasks.map((t) => [t.id, t]));
+      for (const t of tasks) {
+        taskMap.set(t.id, t);
+      }
+      cachedTasks = [...taskMap.values()];
       provider.postMessage({ type: "tasks-updated", tasks });
     },
     (logs) => {

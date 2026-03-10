@@ -17,7 +17,7 @@ export class ChangeMonitor implements vscode.Disposable {
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private _fallbackTimer: ReturnType<typeof setInterval> | null = null;
   private _lastPollTimestamp: string;
-  private _lastWatcherEvent = 0;
+  private _lastWatcherEvent = Date.now();
   private _disposed = false;
 
   private readonly _debounceMs: number;

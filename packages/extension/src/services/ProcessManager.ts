@@ -10,6 +10,7 @@ export interface ProcessManagerCallbacks {
 
 const MAX_RESTARTS = 3;
 const RESTART_DELAY_MS = 1000;
+const GRACEFUL_SHUTDOWN_MS = 5000;
 
 export class ProcessManager implements vscode.Disposable {
   private _process: ChildProcess | null = null;
@@ -54,15 +55,19 @@ export class ProcessManager implements vscode.Disposable {
 
       if (!this._disposed && code !== 0 && this._restartCount < MAX_RESTARTS) {
         this._restartCount++;
+        const delay = RESTART_DELAY_MS * Math.pow(2, this._restartCount - 1);
         this._restartTimer = setTimeout(() => {
           this._restartTimer = null;
           this.start();
-        }, RESTART_DELAY_MS);
+        }, delay);
       }
     });
 
     this._process.on("error", (err) => {
       this._callbacks.onStderr(`[ProcessManager] spawn error: ${err.message}`);
+      this._rl?.close();
+      this._rl = null;
+      this._process = null;
     });
   }
 
@@ -92,7 +97,7 @@ export class ProcessManager implements vscode.Disposable {
       if (this._process) {
         this._process.kill("SIGKILL");
       }
-    }, 3000);
+    }, GRACEFUL_SHUTDOWN_MS);
 
     this._process.once("exit", () => {
       clearTimeout(killTimer);

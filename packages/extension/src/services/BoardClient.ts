@@ -28,7 +28,7 @@ interface PendingRequest {
   timer: ReturnType<typeof setTimeout>;
 }
 
-const REQUEST_TIMEOUT_MS = 10_000;
+const DEFAULT_TIMEOUT_MS = 10_000;
 
 export class BoardClient implements IBoardService {
   private readonly _processManager: ProcessManager;
@@ -90,26 +90,25 @@ export class BoardClient implements IBoardService {
     return new Promise((resolve, reject) => {
       const id = this._nextId++;
 
+      const request = JSON.stringify({ jsonrpc: "2.0", id, method, params });
+
+      try {
+        this._processManager.send(request);
+      } catch (err) {
+        reject(err instanceof Error ? err : new Error(String(err)));
+        return;
+      }
+
       const timer = setTimeout(() => {
         this._pending.delete(id);
         reject(new Error(`RPC timeout: ${method} (id=${id})`));
-      }, REQUEST_TIMEOUT_MS);
+      }, DEFAULT_TIMEOUT_MS);
 
       this._pending.set(id, {
         resolve: resolve as (result: unknown) => void,
         reject,
         timer,
       });
-
-      const request = JSON.stringify({ jsonrpc: "2.0", id, method, params });
-
-      try {
-        this._processManager.send(request);
-      } catch (err) {
-        clearTimeout(timer);
-        this._pending.delete(id);
-        reject(err instanceof Error ? err : new Error(String(err)));
-      }
     });
   }
 

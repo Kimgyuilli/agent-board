@@ -33,6 +33,7 @@ describe("BoardPanelProvider", () => {
       asWebviewUri: ReturnType<typeof vi.fn>;
       cspSource: string;
     };
+    onDidDispose: ReturnType<typeof vi.fn>;
   };
   let messageHandler: (msg: unknown) => void;
 
@@ -62,6 +63,7 @@ describe("BoardPanelProvider", () => {
         asWebviewUri: vi.fn((uri: { path: string }) => uri.path),
         cspSource: "https://test.csp",
       },
+      onDidDispose: vi.fn(() => ({ dispose: vi.fn() })),
     };
 
     provider.resolveWebviewView(

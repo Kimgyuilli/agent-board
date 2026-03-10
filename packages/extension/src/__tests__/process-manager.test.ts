@@ -144,7 +144,7 @@ describe("ProcessManager", () => {
     expect(pm.isRunning).toBe(true);
   });
 
-  it("should auto-restart on non-zero exit up to 3 times", () => {
+  it("should auto-restart on non-zero exit up to 3 times with exponential backoff", () => {
     pm.start();
     const firstProcess = spawnResult;
 
@@ -152,32 +152,31 @@ describe("ProcessManager", () => {
     firstProcess.emit("exit", 1);
     expect(callbacks.onExit).toHaveBeenCalledWith(1);
 
-    // Create new process for restart
+    // Create new process for restart (delay: 1s = 1000 * 2^0)
     spawnResult = createFakeProcess();
     spawnMock.mockReturnValue(spawnResult);
-
     vi.advanceTimersByTime(1000);
     expect(spawnMock).toHaveBeenCalledTimes(2); // initial + 1 restart
 
-    // Second restart
+    // Second restart (delay: 2s = 1000 * 2^1)
     spawnResult.emit("exit", 1);
     spawnResult = createFakeProcess();
     spawnMock.mockReturnValue(spawnResult);
-    vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(2000);
     expect(spawnMock).toHaveBeenCalledTimes(3);
 
-    // Third restart
+    // Third restart (delay: 4s = 1000 * 2^2)
     spawnResult.emit("exit", 1);
     spawnResult = createFakeProcess();
     spawnMock.mockReturnValue(spawnResult);
-    vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(4000);
     expect(spawnMock).toHaveBeenCalledTimes(4); // 1 initial + 3 restarts
 
     // Fourth should NOT restart (max 3)
     spawnResult.emit("exit", 1);
     spawnResult = createFakeProcess();
     spawnMock.mockReturnValue(spawnResult);
-    vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(8000);
     expect(spawnMock).toHaveBeenCalledTimes(4); // no more restarts
   });
 
@@ -210,11 +209,11 @@ describe("ProcessManager", () => {
     expect(spawnResult.stdin.ended).toBe(true);
   });
 
-  it("should force kill after 3 seconds if process doesn't exit", () => {
+  it("should force kill after 5 seconds if process doesn't exit", () => {
     pm.start();
     pm.stop();
 
-    vi.advanceTimersByTime(3000);
+    vi.advanceTimersByTime(5000);
     expect(spawnResult.kill).toHaveBeenCalledWith("SIGKILL");
   });
 
@@ -222,10 +221,10 @@ describe("ProcessManager", () => {
     pm.start();
     pm.stop();
 
-    // Process exits before 3s timeout
+    // Process exits before 5s timeout
     spawnResult.emit("exit", 0);
 
-    vi.advanceTimersByTime(3000);
+    vi.advanceTimersByTime(5000);
     expect(spawnResult.kill).not.toHaveBeenCalled();
   });
 });
