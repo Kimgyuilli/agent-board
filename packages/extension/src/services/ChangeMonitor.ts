@@ -17,7 +17,7 @@ export class ChangeMonitor implements vscode.Disposable {
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private _fallbackTimer: ReturnType<typeof setInterval> | null = null;
   private _lastPollTimestamp: string;
-  private _lastWatcherEvent = Date.now();
+  private _lastWatcherEvent = 0;
   private _disposed = false;
 
   private readonly _debounceMs: number;
@@ -46,6 +46,7 @@ export class ChangeMonitor implements vscode.Disposable {
       vscode.Uri.file(this._dbPath).with({ path: vscode.Uri.file(this._dbPath).path.replace(/[^/]+$/, "") }),
       "*.db-wal",
     );
+    this._lastWatcherEvent = Date.now();
     this._watcher = vscode.workspace.createFileSystemWatcher(walPattern);
     this._watcher.onDidChange(() => this._onWalChanged());
     this._watcher.onDidCreate(() => this._onWalChanged());

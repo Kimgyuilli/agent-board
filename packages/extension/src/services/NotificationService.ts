@@ -2,17 +2,20 @@ import * as vscode from "vscode";
 import type { ProgressLog, Task } from "@agent-board/shared";
 
 const SEEN_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const MAX_SEEN_SIZE = 500;
+const EVICTION_INTERVAL = 100;
 
 export class NotificationService {
   private _seenLogs = new Map<number, number>();
+  private _checkCount = 0;
 
   notify(log: ProgressLog, tasks: Task[]): void {
     if (this._seenLogs.has(log.id)) return;
     this._seenLogs.set(log.id, Date.now());
 
-    // Evict expired entries when exceeding max size
-    if (this._seenLogs.size > MAX_SEEN_SIZE) {
+    // Evict expired entries periodically
+    this._checkCount++;
+    if (this._checkCount >= EVICTION_INTERVAL) {
+      this._checkCount = 0;
       const now = Date.now();
       for (const [id, ts] of this._seenLogs) {
         if (now - ts > SEEN_TTL_MS) {

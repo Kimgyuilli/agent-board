@@ -51,17 +51,17 @@ export function activate(context: vscode.ExtensionContext): void {
   // Cache tasks on init
   boardClient.getInitData().then((data) => {
     cachedTasks = data.tasks;
-  }).catch((err) => { outputChannel.appendLine(`[init] ${err instanceof Error ? err.message : String(err)}`); });
+  }).catch((err) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    outputChannel.appendLine(`[init] ${msg}`);
+    vscode.window.showWarningMessage(`Agent Board: 초기화 실패 — ${msg}`);
+  });
 
   const changeMonitor = new ChangeMonitor(
     dbPath,
     boardClient,
     (tasks) => {
-      const taskMap = new Map(cachedTasks.map((t) => [t.id, t]));
-      for (const t of tasks) {
-        taskMap.set(t.id, t);
-      }
-      cachedTasks = [...taskMap.values()];
+      cachedTasks = tasks;
       provider.postMessage({ type: "tasks-updated", tasks });
     },
     (logs) => {

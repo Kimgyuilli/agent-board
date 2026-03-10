@@ -68,6 +68,7 @@ export class ProcessManager implements vscode.Disposable {
       this._rl?.close();
       this._rl = null;
       this._process = null;
+      this._callbacks.onExit(null);
     });
   }
 
