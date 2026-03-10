@@ -26,14 +26,17 @@ function fail(message: string) {
   return { content: [{ type: "text" as const, text: message }], isError: true as const };
 }
 
-// sync: 프로젝트 현재 상태 요약
-server.tool("sync", "프로젝트 현재 상태 요약", { project_id: z.number().optional() }, async (args) => {
+function safeCall<T>(fn: () => T) {
   try {
-    const db = getDatabase();
-    return ok(getProjectSummary(db, args.project_id));
+    return ok(fn());
   } catch (e) {
     return fail((e as Error).message);
   }
+}
+
+// sync: 프로젝트 현재 상태 요약
+server.tool("sync", "프로젝트 현재 상태 요약", { project_id: z.number().optional() }, async (args) => {
+  return safeCall(() => getProjectSummary(getDatabase(), args.project_id));
 });
 
 // next: 다음 수행 가능한 태스크 추천
@@ -42,12 +45,7 @@ server.tool(
   "다음 수행 가능한 태스크 추천",
   { project_id: z.number().optional(), agent_id: z.string().optional() },
   async (args) => {
-    try {
-      const db = getDatabase();
-      return ok(getNextTasks(db, args.project_id, args.agent_id));
-    } catch (e) {
-      return fail((e as Error).message);
-    }
+    return safeCall(() => getNextTasks(getDatabase(), args.project_id, args.agent_id));
   },
 );
 
@@ -57,12 +55,7 @@ server.tool(
   "태스크 할당",
   { task_id: z.number(), agent_id: z.string() },
   async (args) => {
-    try {
-      const db = getDatabase();
-      return ok(claimTask(db, args.task_id, args.agent_id));
-    } catch (e) {
-      return fail((e as Error).message);
-    }
+    return safeCall(() => claimTask(getDatabase(), args.task_id, args.agent_id));
   },
 );
 
@@ -76,12 +69,7 @@ server.tool(
     files_changed: z.string().optional(),
   },
   async (args) => {
-    try {
-      const db = getDatabase();
-      return ok(completeTask(db, args.task_id, args.content, args.files_changed));
-    } catch (e) {
-      return fail((e as Error).message);
-    }
+    return safeCall(() => completeTask(getDatabase(), args.task_id, args.content, args.files_changed));
   },
 );
 
@@ -91,23 +79,13 @@ server.tool(
   "태스크 블로커 기록",
   { task_id: z.number(), reason: z.string() },
   async (args) => {
-    try {
-      const db = getDatabase();
-      return ok(blockTask(db, args.task_id, args.reason));
-    } catch (e) {
-      return fail((e as Error).message);
-    }
+    return safeCall(() => blockTask(getDatabase(), args.task_id, args.reason));
   },
 );
 
 // context: 태스크 상세 조회
 server.tool("context", "태스크 상세 조회", { task_id: z.number() }, async (args) => {
-  try {
-    const db = getDatabase();
-    return ok(getTaskContext(db, args.task_id));
-  } catch (e) {
-    return fail((e as Error).message);
-  }
+  return safeCall(() => getTaskContext(getDatabase(), args.task_id));
 });
 
 // add_task: 태스크 생성
@@ -122,12 +100,7 @@ server.tool(
     position: z.number().optional(),
   },
   async (args) => {
-    try {
-      const db = getDatabase();
-      return ok(addTask(db, args.phase_id, args.title, args.description, args.depends_on, args.position));
-    } catch (e) {
-      return fail((e as Error).message);
-    }
+    return safeCall(() => addTask(getDatabase(), args.phase_id, args.title, args.description, args.depends_on, args.position));
   },
 );
 
@@ -142,12 +115,7 @@ server.tool(
     assigned_agent: z.string().optional(),
   },
   async (args) => {
-    try {
-      const db = getDatabase();
-      return ok(listTasks(db, args));
-    } catch (e) {
-      return fail((e as Error).message);
-    }
+    return safeCall(() => listTasks(getDatabase(), args));
   },
 );
 

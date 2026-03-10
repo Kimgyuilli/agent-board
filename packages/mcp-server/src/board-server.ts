@@ -1,4 +1,6 @@
 import { createInterface } from "readline";
+import * as path from "path";
+import * as fs from "fs";
 import type { RpcRequest } from "@agent-board/shared";
 import { getDatabase, closeDatabase } from "./db/connection.js";
 import { dispatch } from "./board-handler.js";
@@ -13,8 +15,19 @@ function main(): void {
     process.exit(1);
   }
 
-  const db = getDatabase(dbPath);
-  process.stderr.write(`[board-server] DB opened: ${dbPath}\n`);
+  const resolved = path.resolve(dbPath);
+  const dir = path.dirname(resolved);
+  if (!fs.existsSync(dir)) {
+    process.stderr.write(`DB directory does not exist: ${dir}\n`);
+    process.exit(1);
+  }
+  if (!resolved.endsWith(".db")) {
+    process.stderr.write(`DB path must end with .db: ${resolved}\n`);
+    process.exit(1);
+  }
+
+  const db = getDatabase(resolved);
+  process.stderr.write(`[board-server] DB opened: ${resolved}\n`);
 
   const rl = createInterface({ input: process.stdin, crlfDelay: Infinity });
 

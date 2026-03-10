@@ -12,6 +12,7 @@ import {
   addTask,
   listTasks,
 } from "../db/service.js";
+import { wouldCreateCycle } from "../db/cycle-detection.js";
 
 function createTestDb(): Database.Database {
   const db = new Database(":memory:");
@@ -290,6 +291,32 @@ describe("addTask", () => {
 
   it("should throw for non-existent phase", () => {
     expect(() => addTask(db, 999, "T1")).toThrow("Phase 999 not found");
+  });
+
+  it("should reject circular dependencies via wouldCreateCycle", () => {
+    const { phaseId } = seedProjectAndPhase(db);
+    // Chain: T2 depends on T1
+    const t1 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T1', 0)").run(phaseId).lastInsertRowid as number;
+    const t2 = addTask(db, phaseId, "T2", undefined, [t1]).task.id;
+
+    // wouldCreateCycle(taskId, dependsOnId): would adding taskId→dependsOnId create a cycle?
+    // T1 depending on T2 would create: T1→T2→T1 (cycle)
+    expect(wouldCreateCycle(db, t1, t2)).toBe(true);
+    // T2 depending on T1 already exists, no new cycle from unrelated task
+    expect(wouldCreateCycle(db, t2, t1)).toBe(false);
+  });
+
+  it("should reject transitive circular dependencies", () => {
+    const { phaseId } = seedProjectAndPhase(db);
+    // Chain: T1 ← T2 ← T3 (T3 depends on T2, T2 depends on T1)
+    const t1 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T1', 0)").run(phaseId).lastInsertRowid as number;
+    const t2 = addTask(db, phaseId, "T2", undefined, [t1]).task.id;
+    const t3 = addTask(db, phaseId, "T3", undefined, [t2]).task.id;
+
+    // T1 depending on T3 would create: T1→T3→T2→T1 (cycle)
+    expect(wouldCreateCycle(db, t1, t3)).toBe(true);
+    // T4 depending on T3 is fine (no cycle)
+    expect(() => addTask(db, phaseId, "T4", undefined, [t3])).not.toThrow();
   });
 });
 

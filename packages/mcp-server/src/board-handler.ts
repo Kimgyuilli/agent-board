@@ -83,7 +83,7 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
     if (!task) throw new Error(`Task ${taskId} not found`);
 
     const setClauses: string[] = [];
-    const sqlParams: (string | null)[] = [];
+    const sqlParams: (string | number | null)[] = [];
 
     if (updates.title !== undefined) {
       setClauses.push("title = ?");
@@ -101,7 +101,7 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
     if (setClauses.length === 0) return { task };
 
     setClauses.push("updated_at = datetime('now')");
-    sqlParams.push(String(taskId));
+    sqlParams.push(taskId);
 
     db.prepare(`UPDATE tasks SET ${setClauses.join(", ")} WHERE id = ?`).run(...sqlParams);
 
