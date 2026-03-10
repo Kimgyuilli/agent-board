@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { Phase, Task, TaskStatus } from "@agent-board/shared";
@@ -11,7 +11,7 @@ interface PhaseColumnProps {
   onStatusChange: (taskId: number, status: TaskStatus) => void;
 }
 
-export default function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange }: PhaseColumnProps) {
+function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange }: PhaseColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `phase-${phase.id}`,
     data: { type: "phase", phaseId: phase.id },
@@ -43,3 +43,5 @@ export default function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange 
     </div>
   );
 }
+
+export default React.memo(PhaseColumn);

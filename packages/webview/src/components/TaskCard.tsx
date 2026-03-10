@@ -1,3 +1,4 @@
+import React from "react";
 import type { Task, TaskStatus } from "@agent-board/shared";
 import StatusBadge from "./StatusBadge";
 import StatusDropdown from "./StatusDropdown";
@@ -11,7 +12,7 @@ interface TaskCardProps {
   isOverlay?: boolean;
 }
 
-export default function TaskCard({ task, onClick, onStatusChange, isDragging, isOverlay }: TaskCardProps) {
+function TaskCard({ task, onClick, onStatusChange, isDragging, isOverlay }: TaskCardProps) {
   const className = [
     "task-card",
     isDragging ? "task-card--dragging" : "",
@@ -25,7 +26,7 @@ export default function TaskCard({ task, onClick, onStatusChange, isDragging, is
     <div
       className={className}
       onClick={onClick}
-      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } : undefined}
+      onKeyDown={onClick ? (e) => { if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) { e.preventDefault(); onClick(); } } : undefined}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
     >
@@ -61,3 +62,5 @@ export default function TaskCard({ task, onClick, onStatusChange, isDragging, is
     </div>
   );
 }
+
+export default React.memo(TaskCard);

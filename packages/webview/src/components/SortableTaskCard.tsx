@@ -1,3 +1,4 @@
+import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import type { Task, TaskStatus } from "@agent-board/shared";
 import TaskCard from "./TaskCard";
@@ -8,7 +9,7 @@ interface SortableTaskCardProps {
   onStatusChange: (taskId: number, status: TaskStatus) => void;
 }
 
-export default function SortableTaskCard({ task, onTaskClick, onStatusChange }: SortableTaskCardProps) {
+function SortableTaskCard({ task, onTaskClick, onStatusChange }: SortableTaskCardProps) {
   const {
     attributes,
     listeners,
@@ -39,3 +40,5 @@ export default function SortableTaskCard({ task, onTaskClick, onStatusChange }: 
     </div>
   );
 }
+
+export default React.memo(SortableTaskCard);

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import type { Phase, Task, TaskStatus } from "@agent-board/shared";
 import type { useDragAndDrop } from "../hooks/useDragAndDrop";
@@ -15,7 +15,7 @@ interface KanbanBoardProps {
   onStatusChange: (taskId: number, status: TaskStatus) => void;
 }
 
-export default function KanbanBoard({ phases, tasks, dnd, onTaskClick, onStatusChange }: KanbanBoardProps) {
+function KanbanBoard({ phases, tasks, dnd, onTaskClick, onStatusChange }: KanbanBoardProps) {
   const tasksByPhase = useMemo(() => {
     const map = new Map<number, Task[]>();
     for (const task of tasks) {
@@ -63,3 +63,5 @@ export default function KanbanBoard({ phases, tasks, dnd, onTaskClick, onStatusC
     </DndContext>
   );
 }
+
+export default React.memo(KanbanBoard);

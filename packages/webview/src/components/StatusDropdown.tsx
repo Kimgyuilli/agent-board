@@ -40,11 +40,13 @@ export default function StatusDropdown({ currentStatus, onStatusChange }: Status
           setOpen(!open);
         }}
         type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
       >
         {statusLabels[currentStatus]}
       </button>
       {open && (
-        <div className="status-dropdown">
+        <div className="status-dropdown" role="listbox" aria-label="상태 선택">
           {allStatuses.map((value) => (
             <button
               key={value}
@@ -57,6 +59,8 @@ export default function StatusDropdown({ currentStatus, onStatusChange }: Status
                 setOpen(false);
               }}
               type="button"
+              role="option"
+              aria-selected={value === currentStatus}
             >
               <span className={`status-dot ${statusClassNames[value]}`} />
               {statusLabels[value]}

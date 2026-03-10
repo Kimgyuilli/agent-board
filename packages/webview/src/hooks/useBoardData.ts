@@ -3,7 +3,6 @@ import type {
   Phase,
   Task,
   ExtensionToWebviewMessage,
-  WebviewToExtensionMessage,
 } from "@agent-board/shared";
 import { useVSCodeApi } from "./useVSCodeApi";
 
@@ -66,14 +65,9 @@ export function useBoardData() {
     }
   }, []);
 
-  const typedPostMessage = useCallback(
-    (msg: WebviewToExtensionMessage) => postMessage(msg),
-    [postMessage],
-  );
-
   const setProgressHandler = useCallback((handler: ((msg: ExtensionToWebviewMessage) => void) | null) => {
     progressHandlerRef.current = handler;
   }, []);
 
-  return { phases, tasks, loading, postMessage: typedPostMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler };
+  return { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler };
 }

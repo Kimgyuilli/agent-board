@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   PointerSensor,
   KeyboardSensor,
@@ -69,6 +69,8 @@ export function useDragAndDrop({
   takeSnapshot,
 }: UseDragAndDropOptions) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const tasksRef = useRef(tasks);
+  tasksRef.current = tasks;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -108,8 +110,9 @@ export function useDragAndDrop({
       const { active, over } = event;
       if (!over) return;
 
-      const activePhaseId = findContainer(tasks, active.id);
-      const overPhaseId = findContainer(tasks, over.id);
+      const currentTasks = tasksRef.current;
+      const activePhaseId = findContainer(currentTasks, active.id);
+      const overPhaseId = findContainer(currentTasks, over.id);
 
       if (activePhaseId == null || overPhaseId == null || activePhaseId === overPhaseId) return;
 
@@ -121,7 +124,7 @@ export function useDragAndDrop({
         prev.map((t) => (t.id === taskId ? { ...t, phase_id: overPhaseId } : t)),
       );
     },
-    [tasks, applyOptimistic],
+    [applyOptimistic],
   );
 
   const handleDragEnd = useCallback(

@@ -67,15 +67,16 @@ export default function TaskDetailModal({
       <div className="modal-content" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <span className="text-sm font-semibold">Task #{task.id}</span>
-          <button className="modal-close" onClick={onClose} type="button">
+          <button className="modal-close" onClick={onClose} type="button" aria-label="닫기">
             ✕
           </button>
         </div>
 
         <div className="modal-body">
           <div className="modal-field">
-            <label className="modal-label">제목</label>
+            <label className="modal-label" htmlFor="task-title">제목</label>
             <input
+              id="task-title"
               className="modal-input"
               value={editState.title}
               onChange={(e) => onFieldChange("title", e.target.value)}
@@ -83,8 +84,9 @@ export default function TaskDetailModal({
           </div>
 
           <div className="modal-field">
-            <label className="modal-label">설명</label>
+            <label className="modal-label" htmlFor="task-desc">설명</label>
             <textarea
+              id="task-desc"
               className="modal-input modal-textarea"
               value={editState.description}
               onChange={(e) => onFieldChange("description", e.target.value)}
@@ -93,8 +95,9 @@ export default function TaskDetailModal({
           </div>
 
           <div className="modal-field">
-            <label className="modal-label">담당 에이전트</label>
+            <label className="modal-label" htmlFor="task-agent">담당 에이전트</label>
             <input
+              id="task-agent"
               className="modal-input"
               value={editState.assigned_agent}
               onChange={(e) => onFieldChange("assigned_agent", e.target.value)}
