@@ -2,6 +2,49 @@
 
 > 최신 항목이 위로 오도록 역순으로 작성한다.
 
+## 2026-03-11 — claude-opus (전체 리뷰 이슈 수정 22건)
+### 완료한 작업
+- **프로젝트 전체 리뷰 Critical 3건 + Warning 19건 수정 (5개 배치)**
+
+#### Batch 1: 빌드 안정성 (C1-C3)
+- `package.json`: shared를 먼저 빌드 후 나머지 병렬 실행
+- `extension/package.json`: prebuild 소스 디렉토리 존재 확인, 없으면 exit 1
+- `mcp-server/package.json`: 불필요한 exports 블록 제거
+
+#### Batch 2: 보안 강화 (W1-W3, Info)
+- `BoardPanel.ts`: Math.random → crypto.randomBytes 기반 nonce
+- `board-handler.ts`: updateTask에 ALLOWED_FIELDS 화이트리스트 적용
+- `task-service.ts`: 문자열 삽입 → 두 개의 별도 prepared statement 분리
+- `index.ts`: safeCall 에러 캐스팅을 instanceof Error 패턴으로 변경
+
+#### Batch 3: 안정성 개선 (W4-W8)
+- `ProcessManager.ts`: spawn error 시 onExit(null) 호출하여 retry 트리거
+- `extension.ts`: 초기화 실패 시 showWarningMessage 사용자 알림
+- `extension.ts`: 태스크 캐시를 서버 응답으로 전체 교체
+- `NotificationService.ts`: MAX_SEEN_SIZE 기반 → 100회 주기 TTL eviction
+- `ChangeMonitor.ts`: _lastWatcherEvent 초기값 0, start() 시 Date.now() 설정
+
+#### Batch 4: 접근성 + 성능 (W9-W16)
+- `TaskDetailModal.tsx`: close 버튼 aria-label, label/input htmlFor/id 연결
+- `StatusDropdown.tsx`: aria-haspopup, aria-expanded, role=listbox/option, aria-selected
+- `TaskCard.tsx`: Space 키 e.target === e.currentTarget 체크
+- KanbanBoard, PhaseColumn, TaskCard, SortableTaskCard에 React.memo 적용
+- `useDragAndDrop.ts`: tasksRef로 handleDragOver 의존성 축소
+- `useBoardData.ts`: typedPostMessage 래퍼 제거, postMessage 직접 반환
+
+#### Batch 5: 데드코드 정리 (W17-W19)
+- `models.ts`: AgentStatus 타입, TaskDependency 인터페이스 제거
+- `messages.ts`: AgentStatusChangedMessage 제거
+- `ipc.ts`: 미사용 RPC_ERROR 상수 4건 제거 (METHOD_NOT_FOUND, SERVER_ERROR만 유지)
+- `index.ts`: export 정리
+
+### 다음 할 일
+- 추가 개선 사항 검토 또는 새 기능 개발
+### 이슈/참고
+- 수정 파일 24개 (테스트 1개 포함)
+- 검증: 163/163 테스트 통과, lint 클린, 4개 패키지 빌드 성공
+- W14 (useCallback 의존성 축소)는 react-hooks/exhaustive-deps 룰 호환을 위해 원래 값 유지
+
 ## 2026-03-10 — claude-opus (코드 리뷰 30개 이슈 개선)
 ### 완료한 작업
 - **종합 코드 리뷰 30개 이슈 (Critical 12 + Warning 18) 전체 수정**
