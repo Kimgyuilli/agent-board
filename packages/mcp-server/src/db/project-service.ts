@@ -17,6 +17,36 @@ export function getOrCreateDefaultProject(db: Database.Database): number {
   return (db.prepare("SELECT id FROM projects LIMIT 1").get() as { id: number }).id;
 }
 
+// === addPhase ===
+
+export function addPhase(
+  db: Database.Database,
+  title: string,
+  projectId?: number,
+  order?: number,
+): { id: number; title: string; order: number } {
+  const pid = projectId ?? getOrCreateDefaultProject(db);
+
+  const project = db.prepare("SELECT id FROM projects WHERE id = ?").get(pid) as
+    | { id: number }
+    | undefined;
+  if (!project) throw new Error(`Project ${pid} not found`);
+
+  const pos =
+    order ??
+    ((
+      db.prepare('SELECT COALESCE(MAX("order"), -1) + 1 AS next_ord FROM phases WHERE project_id = ?').get(pid) as {
+        next_ord: number;
+      }
+    ).next_ord);
+
+  const result = db
+    .prepare('INSERT INTO phases (project_id, title, "order") VALUES (?, ?, ?)')
+    .run(pid, title, pos);
+
+  return { id: result.lastInsertRowid as number, title, order: pos };
+}
+
 // === getProjectSummary (sync) ===
 
 export function getProjectSummary(db: Database.Database, projectId?: number): SyncResult {

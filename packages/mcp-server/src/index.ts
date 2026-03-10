@@ -2,8 +2,16 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { getDatabase } from "./db/connection.js";
+
+const DB_PATH = process.env.AGENT_BOARD_DB || "agent-board.db";
+
+function db() {
+  return getDatabase(DB_PATH);
+}
+
 import {
   getProjectSummary,
+  addPhase,
   getNextTasks,
   claimTask,
   completeTask,
@@ -36,8 +44,22 @@ function safeCall<T>(fn: () => T) {
 
 // sync: 프로젝트 현재 상태 요약
 server.tool("sync", "프로젝트 현재 상태 요약", { project_id: z.number().optional() }, async (args) => {
-  return safeCall(() => getProjectSummary(getDatabase(), args.project_id));
+  return safeCall(() => getProjectSummary(db(), args.project_id));
 });
+
+// add_phase: Phase 생성
+server.tool(
+  "add_phase",
+  "새 Phase 생성",
+  {
+    title: z.string(),
+    project_id: z.number().optional(),
+    order: z.number().optional(),
+  },
+  async (args) => {
+    return safeCall(() => addPhase(db(), args.title, args.project_id, args.order));
+  },
+);
 
 // next: 다음 수행 가능한 태스크 추천
 server.tool(
@@ -45,7 +67,7 @@ server.tool(
   "다음 수행 가능한 태스크 추천",
   { project_id: z.number().optional(), agent_id: z.string().optional() },
   async (args) => {
-    return safeCall(() => getNextTasks(getDatabase(), args.project_id, args.agent_id));
+    return safeCall(() => getNextTasks(db(), args.project_id, args.agent_id));
   },
 );
 
@@ -55,7 +77,7 @@ server.tool(
   "태스크 할당",
   { task_id: z.number(), agent_id: z.string() },
   async (args) => {
-    return safeCall(() => claimTask(getDatabase(), args.task_id, args.agent_id));
+    return safeCall(() => claimTask(db(), args.task_id, args.agent_id));
   },
 );
 
@@ -69,7 +91,7 @@ server.tool(
     files_changed: z.string().optional(),
   },
   async (args) => {
-    return safeCall(() => completeTask(getDatabase(), args.task_id, args.content, args.files_changed));
+    return safeCall(() => completeTask(db(), args.task_id, args.content, args.files_changed));
   },
 );
 
@@ -79,13 +101,13 @@ server.tool(
   "태스크 블로커 기록",
   { task_id: z.number(), reason: z.string() },
   async (args) => {
-    return safeCall(() => blockTask(getDatabase(), args.task_id, args.reason));
+    return safeCall(() => blockTask(db(), args.task_id, args.reason));
   },
 );
 
 // context: 태스크 상세 조회
 server.tool("context", "태스크 상세 조회", { task_id: z.number() }, async (args) => {
-  return safeCall(() => getTaskContext(getDatabase(), args.task_id));
+  return safeCall(() => getTaskContext(db(), args.task_id));
 });
 
 // add_task: 태스크 생성
@@ -100,7 +122,7 @@ server.tool(
     position: z.number().optional(),
   },
   async (args) => {
-    return safeCall(() => addTask(getDatabase(), args.phase_id, args.title, args.description, args.depends_on, args.position));
+    return safeCall(() => addTask(db(), args.phase_id, args.title, args.description, args.depends_on, args.position));
   },
 );
 
@@ -115,7 +137,7 @@ server.tool(
     assigned_agent: z.string().optional(),
   },
   async (args) => {
-    return safeCall(() => listTasks(getDatabase(), args));
+    return safeCall(() => listTasks(db(), args));
   },
 );
 
