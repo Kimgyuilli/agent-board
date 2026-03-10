@@ -64,41 +64,39 @@ describe("useBoardData", () => {
     expect(result.current.tasks![1].title).toBe("Other");
   });
 
-  it("should replace all tasks when tasks-updated has 2+ tasks", () => {
+  it("should merge all tasks when tasks-updated has 2+ tasks", () => {
     const { result } = renderHook(() => useBoardData());
 
+    const existingTask = createTask({ id: 1, title: "Existing" });
     act(() => {
-      simulateMessage({ type: "init-data", phases: [], tasks: [createTask(), createTask()] });
+      simulateMessage({ type: "init-data", phases: [], tasks: [existingTask] });
     });
 
-    const newTasks = [createTask({ id: 10 }), createTask({ id: 11 })];
+    const newTasks = [createTask({ id: 1, title: "Updated" }), createTask({ id: 10 })];
     act(() => {
       simulateMessage({ type: "tasks-updated", tasks: newTasks });
     });
 
-    expect(result.current.tasks).toEqual(newTasks);
+    // Map-based merge: id=1 updated, id=10 added
+    expect(result.current.tasks).toHaveLength(2);
+    expect(result.current.tasks![0].title).toBe("Updated");
+    expect(result.current.tasks![1].id).toBe(10);
   });
 
-  it("should prepend progress-log-added and limit to 100", () => {
+  it("should delegate progress-log-added to progress handler", () => {
     const { result } = renderHook(() => useBoardData());
+    const handler = vi.fn();
 
     act(() => {
-      simulateMessage({ type: "init-data", phases: [], tasks: [] });
+      result.current.setProgressHandler(handler);
     });
 
-    // Add 101 logs
-    for (let i = 1; i <= 101; i++) {
-      act(() => {
-        simulateMessage({
-          type: "progress-log-added",
-          log: createProgressLog({ id: i }),
-        });
-      });
-    }
+    const log = createProgressLog({ id: 1 });
+    act(() => {
+      simulateMessage({ type: "progress-log-added", log });
+    });
 
-    expect(result.current.progressLogs.length).toBe(100);
-    // Most recent (id=101) should be first
-    expect(result.current.progressLogs[0].id).toBe(101);
+    expect(handler).toHaveBeenCalledWith({ type: "progress-log-added", log });
   });
 
   it("should support takeSnapshot and rollback", () => {

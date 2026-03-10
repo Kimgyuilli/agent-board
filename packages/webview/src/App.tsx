@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import type { TaskStatus } from "@agent-board/shared";
 import { useBoardData } from "./hooks/useBoardData";
 import { useTaskActions } from "./hooks/useTaskActions";
@@ -10,11 +10,16 @@ import TaskDetailModal from "./components/TaskDetailModal";
 import EmptyState from "./components/EmptyState";
 
 export default function App() {
-  const { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback } =
+  const { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler } =
     useBoardData();
   const actions = useTaskActions(postMessage);
   const detail = useTaskDetail();
   const progressLogs = useProgressLogs(detail.selectedTask?.id ?? null, postMessage);
+
+  useEffect(() => {
+    setProgressHandler(progressLogs.handleMessage);
+    return () => setProgressHandler(null);
+  }, [setProgressHandler, progressLogs.handleMessage]);
 
   const dnd = useDragAndDrop({
     tasks: tasks ?? [],

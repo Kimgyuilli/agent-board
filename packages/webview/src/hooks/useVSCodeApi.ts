@@ -33,6 +33,10 @@ export function useVSCodeApi(
     if (!onMessage) return;
 
     const handler = (event: MessageEvent<ExtensionToWebviewMessage>) => {
+      // Only accept messages from the VS Code webview host
+      if (event.origin && !event.origin.startsWith("vscode-webview://")) {
+        return;
+      }
       onMessage(event.data);
     };
 

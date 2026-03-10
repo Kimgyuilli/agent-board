@@ -22,7 +22,13 @@ export default function TaskCard({ task, onClick, onStatusChange, isDragging, is
     .join(" ");
 
   return (
-    <div className={className} onClick={onClick} role={onClick ? "button" : undefined} tabIndex={onClick ? 0 : undefined}>
+    <div
+      className={className}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } : undefined}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       <div className="flex items-start justify-between gap-2">
         <span className="text-sm font-medium">{task.title}</span>
         <span

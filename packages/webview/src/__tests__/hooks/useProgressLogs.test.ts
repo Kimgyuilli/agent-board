@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { simulateMessage } from "../helpers/vscode-api-mock";
 import { createProgressLog, resetFixtureIds } from "../helpers/fixtures";
 import { useProgressLogs } from "../../hooks/useProgressLogs";
 
@@ -29,7 +28,7 @@ describe("useProgressLogs", () => {
     const logs = [createProgressLog({ task_id: 1 })];
 
     act(() => {
-      simulateMessage({ type: "progress-logs-response", taskId: 1, logs });
+      result.current.handleMessage({ type: "progress-logs-response", taskId: 1, logs });
     });
 
     expect(result.current.logs).toEqual(logs);
@@ -40,7 +39,7 @@ describe("useProgressLogs", () => {
     const { result } = renderHook(() => useProgressLogs(1, postMessage));
 
     act(() => {
-      simulateMessage({ type: "progress-logs-response", taskId: 2, logs: [createProgressLog()] });
+      result.current.handleMessage({ type: "progress-logs-response", taskId: 2, logs: [createProgressLog()] });
     });
 
     expect(result.current.logs).toEqual([]);
@@ -51,12 +50,12 @@ describe("useProgressLogs", () => {
     const existingLogs = [createProgressLog({ id: 1, task_id: 1 })];
 
     act(() => {
-      simulateMessage({ type: "progress-logs-response", taskId: 1, logs: existingLogs });
+      result.current.handleMessage({ type: "progress-logs-response", taskId: 1, logs: existingLogs });
     });
 
     const newLog = createProgressLog({ id: 2, task_id: 1, content: "new" });
     act(() => {
-      simulateMessage({ type: "progress-log-added", log: newLog });
+      result.current.handleMessage({ type: "progress-log-added", log: newLog });
     });
 
     expect(result.current.logs[0].id).toBe(2);
@@ -70,7 +69,7 @@ describe("useProgressLogs", () => {
     );
 
     act(() => {
-      simulateMessage({ type: "progress-logs-response", taskId: 1, logs: [createProgressLog()] });
+      result.current.handleMessage({ type: "progress-logs-response", taskId: 1, logs: [createProgressLog()] });
     });
     expect(result.current.logs.length).toBe(1);
 

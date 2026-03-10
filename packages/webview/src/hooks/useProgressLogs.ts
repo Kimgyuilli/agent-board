@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { ProgressLog, ExtensionToWebviewMessage, WebviewToExtensionMessage } from "@agent-board/shared";
 
 export function useProgressLogs(
@@ -19,11 +19,9 @@ export function useProgressLogs(
     }
   }, [taskId, postMessage]);
 
-  useEffect(() => {
-    if (taskId == null) return;
-
-    const handler = (event: MessageEvent<ExtensionToWebviewMessage>) => {
-      const msg = event.data;
+  const handleMessage = useCallback(
+    (msg: ExtensionToWebviewMessage) => {
+      if (taskId == null) return;
       if (msg.type === "progress-logs-response" && msg.taskId === taskId) {
         setLogs(msg.logs);
         setLoading(false);
@@ -31,11 +29,9 @@ export function useProgressLogs(
       if (msg.type === "progress-log-added" && msg.log.task_id === taskId) {
         setLogs((prev) => [msg.log, ...prev]);
       }
-    };
+    },
+    [taskId],
+  );
 
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
-  }, [taskId]);
-
-  return { logs, loading };
+  return { logs, loading, handleMessage };
 }

@@ -1,12 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import type { TaskStatus } from "@agent-board/shared";
+import { statusLabels, statusClassNames } from "../constants/status";
 
-const statusOptions: { value: TaskStatus; label: string; className: string }[] = [
-  { value: "pending", label: "대기", className: "status-pending" },
-  { value: "in_progress", label: "진행 중", className: "status-in_progress" },
-  { value: "done", label: "완료", className: "status-done" },
-  { value: "blocked", label: "차단됨", className: "status-blocked" },
-];
+const allStatuses: TaskStatus[] = ["pending", "in_progress", "done", "blocked"];
 
 interface StatusDropdownProps {
   currentStatus: TaskStatus;
@@ -35,37 +31,35 @@ export default function StatusDropdown({ currentStatus, onStatusChange }: Status
     };
   }, [open]);
 
-  const current = statusOptions.find((o) => o.value === currentStatus)!;
-
   return (
     <div className="status-dropdown-wrapper" ref={ref}>
       <button
-        className={`status-badge ${current.className}`}
+        className={`status-badge ${statusClassNames[currentStatus]}`}
         onClick={(e) => {
           e.stopPropagation();
           setOpen(!open);
         }}
         type="button"
       >
-        {current.label}
+        {statusLabels[currentStatus]}
       </button>
       {open && (
         <div className="status-dropdown">
-          {statusOptions.map((opt) => (
+          {allStatuses.map((value) => (
             <button
-              key={opt.value}
-              className={`status-dropdown__item ${opt.value === currentStatus ? "status-dropdown__item--active" : ""}`}
+              key={value}
+              className={`status-dropdown__item ${value === currentStatus ? "status-dropdown__item--active" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
-                if (opt.value !== currentStatus) {
-                  onStatusChange(opt.value);
+                if (value !== currentStatus) {
+                  onStatusChange(value);
                 }
                 setOpen(false);
               }}
               type="button"
             >
-              <span className={`status-dot ${opt.className}`} />
-              {opt.label}
+              <span className={`status-dot ${statusClassNames[value]}`} />
+              {statusLabels[value]}
             </button>
           ))}
         </div>

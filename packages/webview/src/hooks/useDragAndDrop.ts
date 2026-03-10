@@ -42,6 +42,25 @@ function findContainer(tasks: Task[], id: string | number): number | null {
   return parsePhaseId(id);
 }
 
+function reorderTasksInPhase(
+  allTasks: Task[],
+  taskId: number,
+  targetPhaseId: number,
+  position: number,
+): Task[] {
+  const updated = allTasks.map((t) =>
+    t.id === taskId ? { ...t, phase_id: targetPhaseId, position } : t,
+  );
+  const inPhase = updated
+    .filter((t) => t.phase_id === targetPhaseId && t.id !== taskId)
+    .sort((a, b) => a.position - b.position);
+  inPhase.splice(position, 0, updated.find((t) => t.id === taskId)!);
+  const positionMap = new Map(inPhase.map((t, i) => [t.id, i]));
+  return updated.map((t) =>
+    positionMap.has(t.id) ? { ...t, position: positionMap.get(t.id)! } : t,
+  );
+}
+
 export function useDragAndDrop({
   tasks,
   onMoveTask,
@@ -153,20 +172,7 @@ export function useDragAndDrop({
       }
 
       // Optimistically reorder
-      applyOptimistic((prev) => {
-        const updated = prev.map((t) =>
-          t.id === taskId ? { ...t, phase_id: targetPhaseId, position } : t,
-        );
-        // Recalculate positions for the target phase
-        const inPhase = updated
-          .filter((t) => t.phase_id === targetPhaseId && t.id !== taskId)
-          .sort((a, b) => a.position - b.position);
-        inPhase.splice(position, 0, updated.find((t) => t.id === taskId)!);
-        const positionMap = new Map(inPhase.map((t, i) => [t.id, i]));
-        return updated.map((t) =>
-          positionMap.has(t.id) ? { ...t, position: positionMap.get(t.id)! } : t,
-        );
-      });
+      applyOptimistic((prev) => reorderTasksInPhase(prev, taskId, targetPhaseId, position));
 
       onMoveTask(taskId, targetPhaseId, position);
     },
