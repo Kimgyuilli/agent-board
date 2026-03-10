@@ -23,30 +23,36 @@ export function getNextTasks(
 ): NextResult {
   const pid = projectId ?? getOrCreateDefaultProject(db);
 
-  const params: (number | string)[] = [pid];
-  let agentFilter = "";
-  if (agentId) {
-    agentFilter = "AND (t.assigned_agent IS NULL OR t.assigned_agent = ?)";
-    params.push(agentId);
-  }
-
-  const recommended = db
-    .prepare(
-      `SELECT t.id, t.title, t.description, t.position, p.title AS phase_title
+  const baseQuery = `SELECT t.id, t.title, t.description, t.position, p.title AS phase_title
        FROM tasks t
        JOIN phases p ON p.id = t.phase_id
        WHERE p.project_id = ?
          AND t.status = 'pending'
-         ${agentFilter}
          AND NOT EXISTS (
            SELECT 1 FROM task_dependencies td
            JOIN tasks dep ON dep.id = td.depends_on_task_id
            WHERE td.task_id = t.id AND dep.status != 'done'
          )
        ORDER BY p."order", t.position
-       LIMIT 10`,
-    )
-    .all(...params) as NextResult["recommended"];
+       LIMIT 10`;
+
+  const filteredQuery = `SELECT t.id, t.title, t.description, t.position, p.title AS phase_title
+       FROM tasks t
+       JOIN phases p ON p.id = t.phase_id
+       WHERE p.project_id = ?
+         AND t.status = 'pending'
+         AND (t.assigned_agent IS NULL OR t.assigned_agent = ?)
+         AND NOT EXISTS (
+           SELECT 1 FROM task_dependencies td
+           JOIN tasks dep ON dep.id = td.depends_on_task_id
+           WHERE td.task_id = t.id AND dep.status != 'done'
+         )
+       ORDER BY p."order", t.position
+       LIMIT 10`;
+
+  const recommended = agentId
+    ? db.prepare(filteredQuery).all(pid, agentId) as NextResult["recommended"]
+    : db.prepare(baseQuery).all(pid) as NextResult["recommended"];
 
   return { recommended };
 }

@@ -82,20 +82,15 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
     const task = db.prepare("SELECT * FROM tasks WHERE id = ?").get(taskId) as Task | undefined;
     if (!task) throw new Error(`Task ${taskId} not found`);
 
+    const ALLOWED_FIELDS = ["title", "description", "assigned_agent"] as const;
     const setClauses: string[] = [];
     const sqlParams: (string | number | null)[] = [];
 
-    if (updates.title !== undefined) {
-      setClauses.push("title = ?");
-      sqlParams.push(updates.title);
-    }
-    if (updates.description !== undefined) {
-      setClauses.push("description = ?");
-      sqlParams.push(updates.description);
-    }
-    if (updates.assigned_agent !== undefined) {
-      setClauses.push("assigned_agent = ?");
-      sqlParams.push(updates.assigned_agent);
+    for (const field of ALLOWED_FIELDS) {
+      if (updates[field] !== undefined) {
+        setClauses.push(`${field} = ?`);
+        sqlParams.push(updates[field] ?? null);
+      }
     }
 
     if (setClauses.length === 0) return { task };

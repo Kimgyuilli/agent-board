@@ -30,7 +30,7 @@ function safeCall<T>(fn: () => T) {
   try {
     return ok(fn());
   } catch (e) {
-    return fail((e as Error).message);
+    return fail(e instanceof Error ? e.message : String(e));
   }
 }
 
