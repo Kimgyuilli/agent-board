@@ -12,7 +12,7 @@ import { ProcessManager } from "./ProcessManager.js";
 
 /** board-server에 대한 RPC 호출 인터페이스. */
 export interface IBoardService extends vscode.Disposable {
-  getInitData(projectId?: number, includeArchived?: boolean): Promise<{ phases: Phase[]; tasks: Task[] }>;
+  getInitData(projectId?: number, includeArchived?: boolean): Promise<{ phases: Phase[]; tasks: Task[]; archivedPhaseCount: number }>;
   moveTask(taskId: number, targetPhaseId: number, position: number): Promise<Task[]>;
   updateTaskStatus(taskId: number, status: TaskStatus): Promise<Task>;
   updateTask(

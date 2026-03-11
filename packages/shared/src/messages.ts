@@ -21,6 +21,7 @@ export interface InitDataMessage {
   type: "init-data";
   phases: Phase[];
   tasks: Task[];
+  archivedPhaseCount: number;
 }
 
 export interface ProgressLogsResponseMessage {
