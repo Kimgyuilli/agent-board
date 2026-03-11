@@ -204,6 +204,41 @@ describe("dispatch — updateTask", () => {
   });
 });
 
+describe("dispatch — archivePhase", () => {
+  it("should archive a phase and return updated data", () => {
+    const { phase1Id } = seed();
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phase1Id);
+
+    const result = expectResult<{ phases: Phase[]; tasks: Task[] }>(
+      rpc("archivePhase", { phaseId: phase1Id, archived: true }),
+    );
+    // Phase 1 is archived, so it should not appear
+    expect(result.phases.every((p) => p.id !== phase1Id)).toBe(true);
+  });
+
+  it("should return error when tasks not all done", () => {
+    const { phase1Id } = seed();
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'pending', 0)").run(phase1Id);
+
+    const error = expectError(rpc("archivePhase", { phaseId: phase1Id, archived: true }));
+    expect(error.message).toContain("not done");
+  });
+
+  it("should exclude archived phases from getInitData", () => {
+    const { projectId, phase1Id, phase2Id } = seed();
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phase1Id);
+    db.prepare("UPDATE phases SET archived = 1 WHERE id = ?").run(phase1Id);
+
+    const result = expectResult<{ phases: Phase[]; tasks: Task[] }>(
+      rpc("getInitData", { projectId }),
+    );
+    expect(result.phases).toHaveLength(1);
+    expect(result.phases[0].id).toBe(phase2Id);
+    // Tasks from archived phase should also be excluded
+    expect(result.tasks.every((t) => t.phase_id !== phase1Id)).toBe(true);
+  });
+});
+
 describe("dispatch — error handling", () => {
   it("should return METHOD_NOT_FOUND for unknown method", () => {
     const error = expectError(rpc("unknownMethod"));

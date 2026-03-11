@@ -4,6 +4,7 @@ import { initializeDatabase } from "../db/schema.js";
 import {
   getOrCreateDefaultProject,
   getProjectSummary,
+  archivePhase,
   getNextTasks,
   claimTask,
   completeTask,
@@ -376,6 +377,107 @@ describe("listTasks", () => {
     const result = listTasks(db, { project_id: projectId });
     expect(result.tasks).toHaveLength(1);
     expect(result.tasks[0].title).toBe("T1");
+  });
+});
+
+describe("archivePhase", () => {
+  let db: Database.Database;
+  beforeEach(() => { db = createTestDb(); });
+
+  it("should archive a phase when all tasks are done", () => {
+    const { phaseId } = seedProjectAndPhase(db);
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phaseId);
+
+    const result = archivePhase(db, phaseId, true);
+    expect(result.archived).toBe(1);
+    expect(result.phase_id).toBe(phaseId);
+  });
+
+  it("should reject archiving when tasks are not all done", () => {
+    const { phaseId } = seedProjectAndPhase(db);
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phaseId);
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T2', 'pending', 1)").run(phaseId);
+
+    expect(() => archivePhase(db, phaseId, true)).toThrow("1 task(s) not done");
+  });
+
+  it("should unarchive a phase", () => {
+    const { phaseId } = seedProjectAndPhase(db);
+    db.prepare("UPDATE phases SET archived = 1 WHERE id = ?").run(phaseId);
+
+    const result = archivePhase(db, phaseId, false);
+    expect(result.archived).toBe(0);
+  });
+
+  it("should throw for non-existent phase", () => {
+    expect(() => archivePhase(db, 999, true)).toThrow("Phase 999 not found");
+  });
+});
+
+describe("getProjectSummary — archive filtering", () => {
+  let db: Database.Database;
+  beforeEach(() => { db = createTestDb(); });
+
+  it("should exclude archived phases by default", () => {
+    const { projectId, phaseId } = seedProjectAndPhase(db, "Active");
+    const archivedPhaseId = db
+      .prepare('INSERT INTO phases (project_id, title, "order", archived) VALUES (?, ?, 1, 1)')
+      .run(projectId, "Archived").lastInsertRowid as number;
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phaseId);
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T2', 'done', 0)").run(archivedPhaseId);
+
+    const result = getProjectSummary(db, projectId);
+    expect(result.phases).toHaveLength(1);
+    expect(result.phases[0].title).toBe("Active");
+  });
+
+  it("should include archived phases when requested", () => {
+    const { projectId, phaseId } = seedProjectAndPhase(db, "Active");
+    db.prepare('INSERT INTO phases (project_id, title, "order", archived) VALUES (?, ?, 1, 1)').run(projectId, "Archived");
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phaseId);
+
+    const result = getProjectSummary(db, projectId, true);
+    expect(result.phases).toHaveLength(2);
+  });
+});
+
+describe("getNextTasks — archive filtering", () => {
+  let db: Database.Database;
+  beforeEach(() => { db = createTestDb(); });
+
+  it("should exclude tasks from archived phases", () => {
+    const { projectId, phaseId } = seedProjectAndPhase(db, "Active");
+    const archivedPhaseId = db
+      .prepare('INSERT INTO phases (project_id, title, "order", archived) VALUES (?, ?, 1, 1)')
+      .run(projectId, "Archived").lastInsertRowid as number;
+
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'Active Task', 'pending', 0)").run(phaseId);
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'Archived Task', 'pending', 0)").run(archivedPhaseId);
+
+    const result = getNextTasks(db, projectId);
+    expect(result.recommended).toHaveLength(1);
+    expect(result.recommended[0].title).toBe("Active Task");
+  });
+});
+
+describe("listTasks — archive filtering", () => {
+  let db: Database.Database;
+  beforeEach(() => { db = createTestDb(); });
+
+  it("should respect include_archived filter", () => {
+    const { projectId, phaseId } = seedProjectAndPhase(db, "Active");
+    const archivedPhaseId = db
+      .prepare('INSERT INTO phases (project_id, title, "order", archived) VALUES (?, ?, 1, 1)')
+      .run(projectId, "Archived").lastInsertRowid as number;
+
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phaseId);
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T2', 'done', 0)").run(archivedPhaseId);
+
+    const excluded = listTasks(db, { project_id: projectId });
+    expect(excluded.tasks).toHaveLength(1);
+
+    const included = listTasks(db, { project_id: projectId, include_archived: true });
+    expect(included.tasks).toHaveLength(2);
   });
 });
 
