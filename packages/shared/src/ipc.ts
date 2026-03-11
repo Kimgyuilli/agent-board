@@ -45,6 +45,10 @@ export interface BoardRpcMethods {
     };
     result: { task: Task };
   };
+  archivePhase: {
+    params: { phaseId: number; archived: boolean };
+    result: { phases: Phase[]; tasks: Task[] };
+  };
   getChanges: {
     params: { since: string };
     result: { tasks: Task[]; logs: ProgressLog[]; timestamp: string };

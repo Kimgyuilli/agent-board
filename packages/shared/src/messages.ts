@@ -66,9 +66,16 @@ export interface RequestProgressLogsMessage {
   taskId: number;
 }
 
+export interface ArchivePhaseMessage {
+  type: "archive-phase";
+  phaseId: number;
+  archived: boolean;
+}
+
 export type WebviewToExtensionMessage =
   | MoveTaskMessage
   | UpdateTaskStatusMessage
   | UpdateTaskMessage
   | RequestRefreshMessage
-  | RequestProgressLogsMessage;
+  | RequestProgressLogsMessage
+  | ArchivePhaseMessage;

@@ -20,6 +20,7 @@ export type {
   RequestRefreshMessage,
   ProgressLogsResponseMessage,
   RequestProgressLogsMessage,
+  ArchivePhaseMessage,
 } from "./messages.js";
 
 export type {
@@ -39,6 +40,8 @@ export type {
   AddTaskResult,
   ListTasksParams,
   ListTasksResult,
+  ArchivePhaseParams,
+  ArchivePhaseResult,
 } from "./mcp.js";
 
 export type {

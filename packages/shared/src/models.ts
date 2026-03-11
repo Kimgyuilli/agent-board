@@ -20,6 +20,7 @@ export interface Phase {
   project_id: number;
   title: string;
   order: number;
+  archived: number;
   created_at: string;
 }
 

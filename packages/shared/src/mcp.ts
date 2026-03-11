@@ -5,6 +5,7 @@ import type { Task, Phase, ProgressLog, TaskStatus } from "./models.js";
 // sync: 프로젝트 현재 상태 요약
 export interface SyncParams {
   project_id?: number;
+  include_archived?: boolean;
 }
 
 export interface SyncResult {
@@ -100,8 +101,21 @@ export interface ListTasksParams {
   phase_id?: number;
   status?: TaskStatus;
   assigned_agent?: string;
+  include_archived?: boolean;
 }
 
 export interface ListTasksResult {
   tasks: Task[];
+}
+
+// archive_phase: Phase 아카이브/해제
+export interface ArchivePhaseParams {
+  phase_id: number;
+  archived: boolean;
+}
+
+export interface ArchivePhaseResult {
+  phase_id: number;
+  archived: number;
+  title: string;
 }

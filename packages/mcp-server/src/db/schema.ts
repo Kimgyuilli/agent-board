@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS phases (
   project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   "order" INTEGER NOT NULL DEFAULT 0,
+  archived INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -54,4 +55,11 @@ CREATE INDEX IF NOT EXISTS idx_progress_logs_task ON progress_logs(task_id);
 
 export function initializeDatabase(db: Database.Database): void {
   db.exec(SCHEMA_SQL);
+
+  // Migration: add archived column to phases if missing (existing DBs)
+  const columns = db.pragma("table_info(phases)") as Array<{ name: string }>;
+  const hasArchived = columns.some((c) => c.name === "archived");
+  if (!hasArchived) {
+    db.exec("ALTER TABLE phases ADD COLUMN archived INTEGER NOT NULL DEFAULT 0");
+  }
 }
