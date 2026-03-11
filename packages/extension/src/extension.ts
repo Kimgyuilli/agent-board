@@ -29,7 +29,9 @@ export function activate(context: vscode.ExtensionContext): void {
   const serverPath = resolveServerPath(context);
   const outputChannel = vscode.window.createOutputChannel("Agent Board");
 
-  boardClient = new BoardClient(serverPath, dbPath, outputChannel);
+  boardClient = new BoardClient(serverPath, dbPath, outputChannel, (msg) => {
+    vscode.window.showErrorMessage(`Agent Board: ${msg}`);
+  });
 
   const webviewDistUri = vscode.Uri.joinPath(context.extensionUri, "dist", "webview");
   const provider = new BoardPanelProvider(context.extensionUri, webviewDistUri, boardClient);
@@ -48,14 +50,20 @@ export function activate(context: vscode.ExtensionContext): void {
   const notificationService = new NotificationService();
   let cachedTasks: import("@agent-board/shared").Task[] = [];
 
-  // Cache tasks on init
-  boardClient.getInitData().then((data) => {
-    cachedTasks = data.tasks;
-  }).catch((err) => {
-    const msg = err instanceof Error ? err.message : String(err);
-    outputChannel.appendLine(`[init] ${msg}`);
-    vscode.window.showWarningMessage(`Agent Board: 초기화 실패 — ${msg}`);
-  });
+  // Cache tasks on init (with retry)
+  function initWithRetry(client: BoardClient): void {
+    client.getInitData().then((data) => {
+      cachedTasks = data.tasks;
+    }).catch((err) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      outputChannel.appendLine(`[init] ${msg}`);
+      vscode.window.showWarningMessage(`Agent Board: 초기화 실패 — ${msg}`, "재시도")
+        .then((sel) => {
+          if (sel === "재시도") initWithRetry(client);
+        });
+    });
+  }
+  initWithRetry(boardClient);
 
   const changeMonitor = new ChangeMonitor(
     dbPath,
@@ -71,6 +79,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     },
     outputChannel,
+    { onPollError: (msg) => vscode.window.showWarningMessage(`Agent Board: ${msg}`) },
   );
   changeMonitor.start();
 

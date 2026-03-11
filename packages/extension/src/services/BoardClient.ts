@@ -10,6 +10,7 @@ import type {
 } from "@agent-board/shared";
 import { ProcessManager } from "./ProcessManager.js";
 
+/** board-server에 대한 RPC 호출 인터페이스. */
 export interface IBoardService extends vscode.Disposable {
   getInitData(projectId?: number, includeArchived?: boolean): Promise<{ phases: Phase[]; tasks: Task[] }>;
   moveTask(taskId: number, targetPhaseId: number, position: number): Promise<Task[]>;
@@ -31,13 +32,23 @@ interface PendingRequest {
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
+/**
+ * board-server 자식 프로세스와 JSON-RPC 2.0으로 통신하는 클라이언트.
+ * 요청마다 고유 ID를 부여하고, 타임아웃(10초) 내 응답이 없으면 reject 한다.
+ * 프로세스 비정상 종료 시 대기 중인 모든 요청을 reject 한다.
+ */
 export class BoardClient implements IBoardService {
   private readonly _processManager: ProcessManager;
   private readonly _pending = new Map<number, PendingRequest>();
   private _nextId = 1;
   private _outputChannel?: vscode.OutputChannel;
 
-  constructor(serverPath: string, dbPath: string, outputChannel?: vscode.OutputChannel) {
+  constructor(
+    serverPath: string,
+    dbPath: string,
+    outputChannel?: vscode.OutputChannel,
+    onCriticalError?: (message: string) => void,
+  ) {
     this._outputChannel = outputChannel;
 
     this._processManager = new ProcessManager(serverPath, dbPath, {
@@ -49,6 +60,7 @@ export class BoardClient implements IBoardService {
           this._rejectAllPending(new Error(`board-server exited with code ${code}`));
         }
       },
+      onCriticalError,
     });
 
     this._processManager.start();
@@ -88,6 +100,10 @@ export class BoardClient implements IBoardService {
     return this._call("getProgressLogs", { taskId, limit });
   }
 
+  /**
+   * RPC 요청 생명주기: 전송 → 타임아웃 등록 → pending 맵에 저장.
+   * 응답은 _handleLine에서 id로 매칭하여 resolve/reject.
+   */
   private _call<M extends BoardRpcMethod>(
     method: M,
     params: BoardRpcMethods[M]["params"],
@@ -97,6 +113,7 @@ export class BoardClient implements IBoardService {
 
       const request = JSON.stringify({ jsonrpc: "2.0", id, method, params });
 
+      // 1. 요청 전송 (프로세스 미실행 시 즉시 reject)
       try {
         this._processManager.send(request);
       } catch (err) {
@@ -104,11 +121,13 @@ export class BoardClient implements IBoardService {
         return;
       }
 
+      // 2. 타임아웃 등록 — 응답 없으면 pending에서 제거 후 reject
       const timer = setTimeout(() => {
         this._pending.delete(id);
         reject(new Error(`RPC timeout: ${method} (id=${id})`));
       }, DEFAULT_TIMEOUT_MS);
 
+      // 3. pending 맵에 저장 — _handleLine에서 id로 매칭하여 resolve/reject
       this._pending.set(id, {
         resolve: resolve as (result: unknown) => void,
         reject,
@@ -123,6 +142,13 @@ export class BoardClient implements IBoardService {
       response = JSON.parse(line);
     } catch {
       this._log(`[BoardClient] invalid JSON from server: ${line}`);
+      return;
+    }
+
+    // id가 null인 응답은 parse error 등 요청 매칭 불가 → 로그만 남김
+    if (response.id == null) {
+      const errMsg = "error" in response && response.error ? response.error.message : "unknown";
+      this._log(`[BoardClient] server error (no id): ${errMsg}`);
       return;
     }
 

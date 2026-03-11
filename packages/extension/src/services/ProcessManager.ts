@@ -6,12 +6,18 @@ export interface ProcessManagerCallbacks {
   onStdoutLine: (line: string) => void;
   onStderr: (data: string) => void;
   onExit: (code: number | null) => void;
+  onCriticalError?: (message: string) => void;
 }
 
 const MAX_RESTARTS = 3;
 const RESTART_DELAY_MS = 1000;
 const GRACEFUL_SHUTDOWN_MS = 5000;
 
+/**
+ * board-server 자식 프로세스의 생명주기를 관리한다.
+ * 비정상 종료 시 지수 백오프로 최대 3회 자동 재시작한다.
+ * 종료 시 stdin.end()로 graceful shutdown을 시도하고, 5초 내 미종료 시 SIGKILL.
+ */
 export class ProcessManager implements vscode.Disposable {
   private _process: ChildProcess | null = null;
   private _rl: ReadlineInterface | null = null;
@@ -65,6 +71,7 @@ export class ProcessManager implements vscode.Disposable {
 
     this._process.on("error", (err) => {
       this._callbacks.onStderr(`[ProcessManager] spawn error: ${err.message}`);
+      this._callbacks.onCriticalError?.(`board-server 시작 실패: ${err.message}`);
       this._rl?.close();
       this._rl = null;
       this._process = null;
