@@ -1,6 +1,6 @@
 export function formatRelativeTime(dateStr: string): string {
   const now = Date.now();
-  const then = new Date(dateStr).getTime();
+  const then = new Date(dateStr + "Z").getTime();
   const diffMs = now - then;
   const diffMin = Math.floor(diffMs / 60_000);
 

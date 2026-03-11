@@ -127,8 +127,8 @@ export default function TaskDetailModal({
           )}
 
           <div className="modal-field modal-meta">
-            <span>생성: {new Date(task.created_at).toLocaleString()}</span>
-            <span>수정: {new Date(task.updated_at).toLocaleString()}</span>
+            <span>생성: {new Date(task.created_at + "Z").toLocaleString()}</span>
+            <span>수정: {new Date(task.updated_at + "Z").toLocaleString()}</span>
           </div>
         </div>
 
