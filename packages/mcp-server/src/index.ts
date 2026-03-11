@@ -20,6 +20,7 @@ import {
   getTaskContext,
   addTask,
   listTasks,
+  executeBatch,
 } from "./db/service.js";
 
 const server = new McpServer({
@@ -155,6 +156,25 @@ server.tool(
   },
   async (args) => {
     return safeCall(() => listTasks(db(), args));
+  },
+);
+
+// batch: 일괄 작업 실행
+const batchOperationSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("add_phase"), title: z.string(), project_id: z.union([z.number(), z.string()]).optional(), order: z.number().optional() }),
+  z.object({ type: z.literal("add_task"), phase_id: z.union([z.number(), z.string()]), title: z.string(), description: z.string().optional(), depends_on: z.array(z.union([z.number(), z.string()])).optional(), position: z.number().optional() }),
+  z.object({ type: z.literal("archive_phase"), phase_id: z.union([z.number(), z.string()]), archived: z.boolean() }),
+  z.object({ type: z.literal("claim"), task_id: z.union([z.number(), z.string()]), agent_id: z.string() }),
+  z.object({ type: z.literal("complete"), task_id: z.union([z.number(), z.string()]), content: z.string().optional(), files_changed: z.string().optional() }),
+  z.object({ type: z.literal("block"), task_id: z.union([z.number(), z.string()]), reason: z.string() }),
+]);
+
+server.tool(
+  "batch",
+  "여러 작업을 단일 트랜잭션으로 일괄 실행. $N placeholder로 이전 결과 ID 참조 가능",
+  { operations: z.array(batchOperationSchema) },
+  async (args) => {
+    return safeCall(() => executeBatch(db(), args.operations));
   },
 );
 
