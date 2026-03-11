@@ -10,7 +10,7 @@ import TaskDetailModal from "./components/TaskDetailModal";
 import EmptyState from "./components/EmptyState";
 
 export default function App() {
-  const { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler } =
+  const { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, available } =
     useBoardData();
   const [showArchived, setShowArchived] = useState(false);
   const actions = useTaskActions(postMessage);
@@ -52,6 +52,14 @@ export default function App() {
     actions.updateTask(detail.selectedTask.id, updates);
     detail.closeTask();
   }, [detail, actions]);
+
+  if (!available) {
+    return (
+      <div className="flex h-screen items-center justify-center p-4 text-center">
+        <span className="text-sm opacity-70">VS Code 환경에서만 사용 가능합니다</span>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

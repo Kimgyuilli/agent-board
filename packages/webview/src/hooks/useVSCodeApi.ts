@@ -24,6 +24,11 @@ function getVSCodeApi(): VSCodeApi | null {
   }
 }
 
+/**
+ * VS Code webview API 래퍼 훅.
+ * acquireVsCodeApi()로 API를 취득하고, Extension→Webview 메시지 리스너를 등록한다.
+ * available 플래그로 API 사용 가능 여부를 반환한다.
+ */
 export function useVSCodeApi(
   onMessage?: (message: ExtensionToWebviewMessage) => void,
 ) {
@@ -48,5 +53,5 @@ export function useVSCodeApi(
     api.current?.postMessage(message);
   }, []);
 
-  return { api: api.current, postMessage };
+  return { api: api.current, postMessage, available: api.current != null };
 }

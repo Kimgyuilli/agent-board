@@ -6,6 +6,11 @@ import type {
 } from "@agent-board/shared";
 import { useVSCodeApi } from "./useVSCodeApi";
 
+/**
+ * 보드 전체 상태를 관리하는 훅.
+ * Extension으로부터 init-data, tasks-updated, error 등의 메시지를 수신하여
+ * phases/tasks 상태를 갱신한다. 낙관적 업데이트를 위한 snapshot/rollback을 제공한다.
+ */
 export function useBoardData() {
   const [phases, setPhases] = useState<Phase[] | null>(null);
   const [tasks, setTasks] = useState<Task[] | null>(null);
@@ -38,10 +43,17 @@ export function useBoardData() {
       case "progress-log-added":
         progressHandlerRef.current?.(msg);
         break;
+      case "error":
+        // RPC 실패 시 낙관적 업데이트 롤백
+        if (snapshotRef.current) {
+          setTasks(snapshotRef.current);
+          snapshotRef.current = null;
+        }
+        break;
     }
   }, []);
 
-  const { postMessage } = useVSCodeApi(handleMessage);
+  const { postMessage, available } = useVSCodeApi(handleMessage);
 
   useEffect(() => {
     postMessage({ type: "request-refresh" });
@@ -69,5 +81,5 @@ export function useBoardData() {
     progressHandlerRef.current = handler;
   }, []);
 
-  return { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler };
+  return { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, available };
 }
