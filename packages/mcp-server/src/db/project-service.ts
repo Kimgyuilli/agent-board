@@ -3,8 +3,11 @@ import type { SyncResult, ArchivePhaseResult } from "@agent-board/shared";
 
 const DEFAULT_PROJECT_NAME = "Default Project";
 
-// === getOrCreateDefaultProject ===
-
+/**
+ * 기본 프로젝트 ID를 반환한다. 프로젝트가 없으면 생성한다.
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @returns 기본 프로젝트 ID
+ */
 export function getOrCreateDefaultProject(db: Database.Database): number {
   const row = db.prepare("SELECT id FROM projects LIMIT 1").get() as { id: number } | undefined;
   if (row) return row.id;
@@ -17,8 +20,15 @@ export function getOrCreateDefaultProject(db: Database.Database): number {
   return (db.prepare("SELECT id FROM projects LIMIT 1").get() as { id: number }).id;
 }
 
-// === addPhase ===
-
+/**
+ * 새 Phase를 추가한다.
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param title - Phase 제목
+ * @param projectId - 프로젝트 ID (미지정 시 기본 프로젝트)
+ * @param order - 정렬 순서 (미지정 시 마지막)
+ * @returns 생성된 Phase의 id, title, order
+ * @throws {Error} 프로젝트가 없을 때
+ */
 export function addPhase(
   db: Database.Database,
   title: string,
@@ -47,8 +57,14 @@ export function addPhase(
   return { id: result.lastInsertRowid as number, title, order: pos };
 }
 
-// === archivePhase ===
-
+/**
+ * Phase를 아카이브하거나 아카이브를 해제한다.
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param phaseId - Phase ID
+ * @param archived - true면 아카이브, false면 해제
+ * @returns 변경된 Phase 정보
+ * @throws {Error} Phase가 없거나 미완료 태스크가 있을 때 (아카이브 시)
+ */
 export function archivePhase(
   db: Database.Database,
   phaseId: number,
@@ -77,8 +93,14 @@ export function archivePhase(
   return { phase_id: phaseId, archived: archived ? 1 : 0, title: phase.title };
 }
 
-// === getProjectSummary (sync) ===
-
+/**
+ * 프로젝트 요약을 조회한다 (Phase별 통계, 활성 태스크, 최근 로그).
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param projectId - 프로젝트 ID (미지정 시 기본 프로젝트)
+ * @param includeArchived - 아카이브된 Phase 포함 여부
+ * @returns 프로젝트명, Phase 통계, 활성 태스크, 최근 로그
+ * @throws {Error} 프로젝트가 없을 때
+ */
 export function getProjectSummary(
   db: Database.Database,
   projectId?: number,

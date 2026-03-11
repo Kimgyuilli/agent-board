@@ -29,6 +29,13 @@ function resolveIdArray(
   return values.map((v) => resolveId(v, results, currentIndex));
 }
 
+/**
+ * 여러 작업을 단일 트랜잭션으로 일괄 실행한다.
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param operations - 실행할 작업 배열 ($N placeholder로 이전 결과 ID 참조 가능)
+ * @returns 각 작업의 결과 (index, type, id)와 실행 통계
+ * @throws {Error} 알 수 없는 작업 타입이거나 placeholder 참조 오류 시
+ */
 export function executeBatch(
   db: Database.Database,
   operations: BatchOperation[],

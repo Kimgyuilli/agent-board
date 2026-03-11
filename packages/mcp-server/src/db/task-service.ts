@@ -14,8 +14,13 @@ import type {
 import { getOrCreateDefaultProject } from "./project-service.js";
 import { wouldCreateCycle } from "./cycle-detection.js";
 
-// === getNextTasks (next) ===
-
+/**
+ * pending 상태이고 의존이 모두 해결된 태스크 목록을 반환한다.
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param projectId - 프로젝트 ID (미지정 시 기본 프로젝트)
+ * @param agentId - 에이전트 ID (지정 시 해당 에이전트에 할당 가능한 태스크만 필터)
+ * @returns 추천 태스크 목록 (최대 10개)
+ */
 export function getNextTasks(
   db: Database.Database,
   projectId?: number,
@@ -23,6 +28,8 @@ export function getNextTasks(
 ): NextResult {
   const pid = projectId ?? getOrCreateDefaultProject(db);
 
+  // NOT EXISTS 서브쿼리: 미완료(status != 'done') 의존이 하나라도 있으면 제외
+  // → pending이면서 의존이 모두 해결된 태스크만 선택
   const baseQuery = `SELECT t.id, t.title, t.description, t.position, p.title AS phase_title
        FROM tasks t
        JOIN phases p ON p.id = t.phase_id
@@ -59,13 +66,20 @@ export function getNextTasks(
   return { recommended };
 }
 
-// === claimTask ===
-
+/**
+ * 태스크를 에이전트에게 할당한다 (status → in_progress).
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param taskId - 할당할 태스크 ID
+ * @param agentId - 할당받을 에이전트 ID
+ * @returns 업데이트된 태스크와 의존 완료 로그
+ * @throws {Error} 태스크가 없거나 pending 상태가 아니거나 미해결 의존이 있을 때
+ */
 export function claimTask(
   db: Database.Database,
   taskId: number,
   agentId: string,
 ): ClaimResult {
+  // 트랜잭션: 상태 검증 → 의존 검증 → status 업데이트 → 로그 기록 → 의존 완료 로그 조회
   const claim = db.transaction(() => {
     const task = db.prepare("SELECT * FROM tasks WHERE id = ?").get(taskId) as Task | undefined;
     if (!task) throw new Error(`Task ${taskId} not found`);
@@ -113,8 +127,15 @@ export function claimTask(
   return claim();
 }
 
-// === completeTask ===
-
+/**
+ * 태스크를 완료 처리한다 (status → done).
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param taskId - 완료할 태스크 ID
+ * @param content - 완료 로그 내용
+ * @param filesChanged - 변경된 파일 목록
+ * @returns 업데이트된 태스크, 새로 해제된 태스크 목록, Phase 진행률
+ * @throws {Error} 태스크가 없거나 in_progress 상태가 아닐 때
+ */
 export function completeTask(
   db: Database.Database,
   taskId: number,
@@ -139,6 +160,8 @@ export function completeTask(
 
     const updated = db.prepare("SELECT * FROM tasks WHERE id = ?").get(taskId) as Task;
 
+    // 이 태스크 완료로 모든 의존이 해결된 pending 태스크를 찾는다
+    // (완료된 태스크에 의존하면서, 다른 미완료 의존이 없는 태스크)
     const newly_unblocked = db
       .prepare(
         `SELECT t.id, t.title
@@ -168,8 +191,14 @@ export function completeTask(
   return complete();
 }
 
-// === blockTask ===
-
+/**
+ * 태스크에 블로커를 등록한다 (status → blocked).
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param taskId - 블로킹할 태스크 ID
+ * @param reason - 블로커 사유
+ * @returns 업데이트된 태스크
+ * @throws {Error} 태스크가 없거나 in_progress 상태가 아닐 때
+ */
 export function blockTask(
   db: Database.Database,
   taskId: number,
@@ -199,8 +228,13 @@ export function blockTask(
   return block();
 }
 
-// === getTaskContext ===
-
+/**
+ * 태스크 상세 정보를 조회한다 (태스크 + Phase + 로그 + 의존관계).
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param taskId - 조회할 태스크 ID
+ * @returns 태스크, Phase, 진행 로그, 의존/피의존 태스크 목록
+ * @throws {Error} 태스크가 없을 때
+ */
 export function getTaskContext(db: Database.Database, taskId: number): ContextResult {
   const task = db.prepare("SELECT * FROM tasks WHERE id = ?").get(taskId) as Task | undefined;
   if (!task) throw new Error(`Task ${taskId} not found`);
@@ -232,8 +266,17 @@ export function getTaskContext(db: Database.Database, taskId: number): ContextRe
   return { task, phase, logs, dependencies, dependents };
 }
 
-// === addTask ===
-
+/**
+ * 새 태스크를 추가한다.
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param phaseId - 소속 Phase ID
+ * @param title - 태스크 제목
+ * @param description - 태스크 설명
+ * @param dependsOn - 의존 태스크 ID 배열 (순환 의존 시 에러)
+ * @param position - 정렬 위치 (미지정 시 마지막)
+ * @returns 생성된 태스크
+ * @throws {Error} Phase가 없거나 순환 의존이 발생할 때
+ */
 export function addTask(
   db: Database.Database,
   phaseId: number,
@@ -285,8 +328,12 @@ export function addTask(
   return add();
 }
 
-// === listTasks ===
-
+/**
+ * 필터 조건에 맞는 태스크 목록을 조회한다.
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param filters - 필터 조건 (project_id, phase_id, status, assigned_agent, include_archived)
+ * @returns 필터된 태스크 배열
+ */
 export function listTasks(
   db: Database.Database,
   filters: {

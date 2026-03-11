@@ -2,8 +2,13 @@ import type Database from "better-sqlite3";
 import type { Task, ProgressLog } from "@agent-board/shared";
 import { getOrCreateDefaultProject } from "./project-service.js";
 
-// === getChangesSince ===
-
+/**
+ * 지정 시각 이후 변경된 태스크와 로그를 조회한다.
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param since - 기준 시각 (ISO 8601 형식)
+ * @param projectId - 프로젝트 ID (미지정 시 기본 프로젝트)
+ * @returns 변경된 태스크, 새 로그, 현재 서버 타임스탬프
+ */
 export function getChangesSince(
   db: Database.Database,
   since: string,
@@ -39,8 +44,13 @@ export function getChangesSince(
   return { tasks, logs, timestamp };
 }
 
-// === getProgressLogs ===
-
+/**
+ * 진행 로그를 조회한다.
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param taskId - 태스크 ID (미지정 시 전체 로그)
+ * @param limit - 최대 반환 수 (기본 50, 최대 200)
+ * @returns 진행 로그 배열 (최신순)
+ */
 export function getProgressLogs(
   db: Database.Database,
   taskId?: number,
