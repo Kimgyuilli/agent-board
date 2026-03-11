@@ -72,6 +72,8 @@
     "better-sqlite3": "^12.6.2"
   },
   "devDependencies": {
+    "@agent-board/mcp-server": "workspace:*",
+    "@agent-board/webview": "workspace:*",
     "@types/mocha": "^10.0.0",
     "@types/node": "^25.4.0",
     "@types/vscode": "^1.85.0",

@@ -48,6 +48,12 @@ importers:
         specifier: ^12.6.2
         version: 12.6.2
     devDependencies:
+      '@agent-board/mcp-server':
+        specifier: workspace:*
+        version: link:../mcp-server
+      '@agent-board/webview':
+        specifier: workspace:*
+        version: link:../webview
       '@types/mocha':
         specifier: ^10.0.0
         version: 10.0.10
