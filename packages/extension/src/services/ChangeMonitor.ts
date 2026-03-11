@@ -6,12 +6,18 @@ export interface ChangeMonitorOptions {
   debounceMs?: number;
   fallbackPollMs?: number;
   fallbackIdleMs?: number;
+  onPollError?: (message: string) => void;
 }
 
 const DEFAULT_DEBOUNCE_MS = 500;
 const DEFAULT_FALLBACK_POLL_MS = 5000;
 const DEFAULT_FALLBACK_IDLE_MS = 30000;
+const MAX_CONSECUTIVE_ERRORS = 5;
 
+/**
+ * DB 변경을 감지하여 webview에 업데이트를 전달하는 모니터.
+ * WAL 파일 감시(FileSystemWatcher)를 기본으로, 이벤트 미수신 시 폴링으로 fallback.
+ */
 export class ChangeMonitor implements vscode.Disposable {
   private _watcher: vscode.FileSystemWatcher | null = null;
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -19,10 +25,12 @@ export class ChangeMonitor implements vscode.Disposable {
   private _lastPollTimestamp: string;
   private _lastWatcherEvent = 0;
   private _disposed = false;
+  private _consecutiveErrors = 0;
 
   private readonly _debounceMs: number;
   private readonly _fallbackPollMs: number;
   private readonly _fallbackIdleMs: number;
+  private readonly _onPollError?: (message: string) => void;
 
   constructor(
     private readonly _dbPath: string,
@@ -35,6 +43,7 @@ export class ChangeMonitor implements vscode.Disposable {
     this._debounceMs = options?.debounceMs ?? DEFAULT_DEBOUNCE_MS;
     this._fallbackPollMs = options?.fallbackPollMs ?? DEFAULT_FALLBACK_POLL_MS;
     this._fallbackIdleMs = options?.fallbackIdleMs ?? DEFAULT_FALLBACK_IDLE_MS;
+    this._onPollError = options?.onPollError;
     this._lastPollTimestamp = new Date().toISOString().replace("T", " ").slice(0, 19);
   }
 
@@ -95,6 +104,7 @@ export class ChangeMonitor implements vscode.Disposable {
     try {
       const result = await this._boardClient.getChanges(this._lastPollTimestamp);
       this._lastPollTimestamp = result.timestamp;
+      this._consecutiveErrors = 0;
 
       if (result.tasks.length > 0) {
         this._onTasksChanged(result.tasks);
@@ -103,7 +113,13 @@ export class ChangeMonitor implements vscode.Disposable {
         this._onLogsAdded(result.logs);
       }
     } catch (err) {
-      this._log(`[ChangeMonitor] poll error: ${err instanceof Error ? err.message : String(err)}`);
+      const msg = err instanceof Error ? err.message : String(err);
+      this._log(`[ChangeMonitor] poll error: ${msg}`);
+      this._consecutiveErrors++;
+      if (this._consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        this._onPollError?.(`변경 감지 폴링이 ${this._consecutiveErrors}회 연속 실패했습니다: ${msg}`);
+        this._consecutiveErrors = 0;
+      }
     }
   }
 
