@@ -16,7 +16,7 @@ export function getChangesSince(
       `SELECT t.*
        FROM tasks t
        JOIN phases p ON p.id = t.phase_id
-       WHERE p.project_id = ? AND t.updated_at > ?
+       WHERE p.project_id = ? AND p.archived = 0 AND t.updated_at > ?
        ORDER BY p."order", t.position`,
     )
     .all(pid, since) as Task[];

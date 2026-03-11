@@ -27,6 +27,7 @@ export function getNextTasks(
        FROM tasks t
        JOIN phases p ON p.id = t.phase_id
        WHERE p.project_id = ?
+         AND p.archived = 0
          AND t.status = 'pending'
          AND NOT EXISTS (
            SELECT 1 FROM task_dependencies td
@@ -40,6 +41,7 @@ export function getNextTasks(
        FROM tasks t
        JOIN phases p ON p.id = t.phase_id
        WHERE p.project_id = ?
+         AND p.archived = 0
          AND t.status = 'pending'
          AND (t.assigned_agent IS NULL OR t.assigned_agent = ?)
          AND NOT EXISTS (
@@ -292,10 +294,15 @@ export function listTasks(
     phase_id?: number;
     status?: string;
     assigned_agent?: string;
+    include_archived?: boolean;
   },
 ): ListTasksResult {
   const conditions: string[] = [];
   const params: (number | string)[] = [];
+
+  if (!filters.include_archived) {
+    conditions.push("p.archived = 0");
+  }
 
   if (filters.phase_id != null) {
     conditions.push("t.phase_id = ?");

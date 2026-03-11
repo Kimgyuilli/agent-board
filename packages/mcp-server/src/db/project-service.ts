@@ -1,5 +1,5 @@
 import type Database from "better-sqlite3";
-import type { SyncResult } from "@agent-board/shared";
+import type { SyncResult, ArchivePhaseResult } from "@agent-board/shared";
 
 const DEFAULT_PROJECT_NAME = "Default Project";
 
@@ -47,15 +47,51 @@ export function addPhase(
   return { id: result.lastInsertRowid as number, title, order: pos };
 }
 
+// === archivePhase ===
+
+export function archivePhase(
+  db: Database.Database,
+  phaseId: number,
+  archived: boolean,
+): ArchivePhaseResult {
+  const phase = db.prepare("SELECT * FROM phases WHERE id = ?").get(phaseId) as
+    | { id: number; title: string; archived: number }
+    | undefined;
+  if (!phase) throw new Error(`Phase ${phaseId} not found`);
+
+  if (archived) {
+    const incomplete = db
+      .prepare(
+        `SELECT COUNT(*) AS cnt FROM tasks WHERE phase_id = ? AND status != 'done'`,
+      )
+      .get(phaseId) as { cnt: number };
+    if (incomplete.cnt > 0) {
+      throw new Error(
+        `Cannot archive phase ${phaseId}: ${incomplete.cnt} task(s) not done`,
+      );
+    }
+  }
+
+  db.prepare("UPDATE phases SET archived = ? WHERE id = ?").run(archived ? 1 : 0, phaseId);
+
+  return { phase_id: phaseId, archived: archived ? 1 : 0, title: phase.title };
+}
+
 // === getProjectSummary (sync) ===
 
-export function getProjectSummary(db: Database.Database, projectId?: number): SyncResult {
+export function getProjectSummary(
+  db: Database.Database,
+  projectId?: number,
+  includeArchived = false,
+): SyncResult {
   const pid = projectId ?? getOrCreateDefaultProject(db);
 
   const project = db.prepare("SELECT name FROM projects WHERE id = ?").get(pid) as
     | { name: string }
     | undefined;
   if (!project) throw new Error(`Project ${pid} not found`);
+
+  const archiveFilter = includeArchived ? "" : "AND p.archived = 0";
 
   const phases = db
     .prepare(
@@ -66,7 +102,7 @@ export function getProjectSummary(db: Database.Database, projectId?: number): Sy
               SUM(CASE WHEN t.status = 'blocked' THEN 1 ELSE 0 END) AS blocked
        FROM phases p
        LEFT JOIN tasks t ON t.phase_id = p.id
-       WHERE p.project_id = ?
+       WHERE p.project_id = ? ${archiveFilter}
        GROUP BY p.id
        ORDER BY p."order"`,
     )
@@ -77,7 +113,7 @@ export function getProjectSummary(db: Database.Database, projectId?: number): Sy
       `SELECT t.id, t.title, t.status, t.assigned_agent
        FROM tasks t
        JOIN phases p ON p.id = t.phase_id
-       WHERE p.project_id = ? AND t.status IN ('in_progress', 'blocked')
+       WHERE p.project_id = ? AND t.status IN ('in_progress', 'blocked') ${archiveFilter}
        ORDER BY t.position`,
     )
     .all(pid) as SyncResult["active_tasks"];
@@ -88,7 +124,7 @@ export function getProjectSummary(db: Database.Database, projectId?: number): Sy
        FROM progress_logs pl
        JOIN tasks t ON t.id = pl.task_id
        JOIN phases p ON p.id = t.phase_id
-       WHERE p.project_id = ?
+       WHERE p.project_id = ? ${archiveFilter}
        ORDER BY pl.created_at DESC
        LIMIT 10`,
     )
