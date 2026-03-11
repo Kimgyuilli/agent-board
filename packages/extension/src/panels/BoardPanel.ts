@@ -6,6 +6,11 @@ import type {
 } from "@agent-board/shared";
 import type { IBoardService } from "../services/BoardClient.js";
 
+/**
+ * Webview 패널을 관리하는 프로바이더.
+ * webview ↔ extension 간 postMessage 프로토콜로 통신하며,
+ * IBoardService를 통해 board-server에 RPC 호출을 위임한다.
+ */
 export class BoardPanelProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
   private _showArchived = false;
@@ -101,6 +106,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       vscode.window.showErrorMessage(`Agent Board: ${msg}`);
+      this.postMessage({ type: "error", source: message.type, message: msg });
     }
   }
 

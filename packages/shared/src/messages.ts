@@ -29,12 +29,19 @@ export interface ProgressLogsResponseMessage {
   logs: ProgressLog[];
 }
 
+export interface ErrorMessage {
+  type: "error";
+  source: string;
+  message: string;
+}
+
 export type ExtensionToWebviewMessage =
   | TasksUpdatedMessage
   | PhasesUpdatedMessage
   | ProgressLogAddedMessage
   | ProgressLogsResponseMessage
-  | InitDataMessage;
+  | InitDataMessage
+  | ErrorMessage;
 
 // === Webview → Extension 메시지 ===
 
