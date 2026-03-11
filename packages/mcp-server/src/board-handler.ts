@@ -38,7 +38,14 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
       project_id: pid,
       include_archived: params.includeArchived,
     });
-    return { phases, tasks };
+    const archivedPhaseCount = (
+      db
+        .prepare(
+          "SELECT COUNT(*) as cnt FROM phases WHERE project_id = ? AND archived = 1",
+        )
+        .get(pid) as { cnt: number }
+    ).cnt;
+    return { phases, tasks, archivedPhaseCount };
   },
 
   archivePhase(db, params) {
