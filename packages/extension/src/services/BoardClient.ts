@@ -18,6 +18,7 @@ export interface IBoardService extends vscode.Disposable {
     taskId: number,
     updates: Partial<Pick<Task, "title" | "description" | "assigned_agent">>,
   ): Promise<Task>;
+  archivePhase(phaseId: number, archived: boolean): Promise<{ phases: Phase[]; tasks: Task[] }>;
   getChanges(since: string): Promise<{ tasks: Task[]; logs: ProgressLog[]; timestamp: string }>;
   getProgressLogs(taskId?: number, limit?: number): Promise<{ logs: ProgressLog[] }>;
 }
@@ -73,6 +74,10 @@ export class BoardClient implements IBoardService {
   ): Promise<Task> {
     const result = await this._call("updateTask", { taskId, updates });
     return result.task;
+  }
+
+  async archivePhase(phaseId: number, archived: boolean): Promise<{ phases: Phase[]; tasks: Task[] }> {
+    return this._call("archivePhase", { phaseId, archived });
   }
 
   async getChanges(since: string): Promise<{ tasks: Task[]; logs: ProgressLog[]; timestamp: string }> {

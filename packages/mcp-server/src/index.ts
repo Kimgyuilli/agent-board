@@ -12,6 +12,7 @@ function db() {
 import {
   getProjectSummary,
   addPhase,
+  archivePhase,
   getNextTasks,
   claimTask,
   completeTask,
@@ -43,9 +44,14 @@ function safeCall<T>(fn: () => T) {
 }
 
 // sync: 프로젝트 현재 상태 요약
-server.tool("sync", "프로젝트 현재 상태 요약", { project_id: z.number().optional() }, async (args) => {
-  return safeCall(() => getProjectSummary(db(), args.project_id));
-});
+server.tool(
+  "sync",
+  "프로젝트 현재 상태 요약",
+  { project_id: z.number().optional(), include_archived: z.boolean().optional() },
+  async (args) => {
+    return safeCall(() => getProjectSummary(db(), args.project_id, args.include_archived));
+  },
+);
 
 // add_phase: Phase 생성
 server.tool(
@@ -58,6 +64,16 @@ server.tool(
   },
   async (args) => {
     return safeCall(() => addPhase(db(), args.title, args.project_id, args.order));
+  },
+);
+
+// archive_phase: Phase 아카이브/해제
+server.tool(
+  "archive_phase",
+  "Phase 아카이브/해제",
+  { phase_id: z.number(), archived: z.boolean() },
+  async (args) => {
+    return safeCall(() => archivePhase(db(), args.phase_id, args.archived));
   },
 );
 
@@ -135,6 +151,7 @@ server.tool(
     phase_id: z.number().optional(),
     status: z.enum(["pending", "in_progress", "done", "blocked"]).optional(),
     assigned_agent: z.string().optional(),
+    include_archived: z.boolean().optional(),
   },
   async (args) => {
     return safeCall(() => listTasks(db(), args));

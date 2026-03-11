@@ -9,6 +9,7 @@ import { RPC_ERROR } from "@agent-board/shared";
 import type { Task } from "@agent-board/shared";
 import {
   getOrCreateDefaultProject,
+  archivePhase,
   listTasks,
   getChangesSince,
   getProgressLogs,
@@ -26,8 +27,20 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
     const pid = params.projectId ?? getOrCreateDefaultProject(db);
 
     const phases = db
-      .prepare(`SELECT * FROM phases WHERE project_id = ? ORDER BY "order"`)
+      .prepare(`SELECT * FROM phases WHERE project_id = ? AND archived = 0 ORDER BY "order"`)
       .all(pid) as BoardRpcMethods["getInitData"]["result"]["phases"];
+
+    const { tasks } = listTasks(db, { project_id: pid });
+    return { phases, tasks };
+  },
+
+  archivePhase(db, params) {
+    archivePhase(db, params.phaseId, params.archived);
+
+    const pid = getOrCreateDefaultProject(db);
+    const phases = db
+      .prepare(`SELECT * FROM phases WHERE project_id = ? AND archived = 0 ORDER BY "order"`)
+      .all(pid) as BoardRpcMethods["archivePhase"]["result"]["phases"];
 
     const { tasks } = listTasks(db, { project_id: pid });
     return { phases, tasks };

@@ -81,6 +81,15 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
           });
           break;
         }
+        case "archive-phase": {
+          const archiveResult = await this._service.archivePhase(
+            message.phaseId,
+            message.archived,
+          );
+          this.postMessage({ type: "phases-updated", phases: archiveResult.phases });
+          this.postMessage({ type: "tasks-updated", tasks: archiveResult.tasks });
+          break;
+        }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
