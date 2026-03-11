@@ -22,6 +22,7 @@ export interface Phase {
   order: number;
   archived: number;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Task {

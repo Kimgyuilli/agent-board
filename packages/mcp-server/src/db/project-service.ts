@@ -72,7 +72,7 @@ export function archivePhase(
     }
   }
 
-  db.prepare("UPDATE phases SET archived = ? WHERE id = ?").run(archived ? 1 : 0, phaseId);
+  db.prepare("UPDATE phases SET archived = ?, updated_at = datetime('now') WHERE id = ?").run(archived ? 1 : 0, phaseId);
 
   return { phase_id: phaseId, archived: archived ? 1 : 0, title: phase.title };
 }

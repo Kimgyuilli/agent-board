@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS phases (
   title TEXT NOT NULL,
   "order" INTEGER NOT NULL DEFAULT 0,
   archived INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
@@ -61,5 +62,11 @@ export function initializeDatabase(db: Database.Database): void {
   const hasArchived = columns.some((c) => c.name === "archived");
   if (!hasArchived) {
     db.exec("ALTER TABLE phases ADD COLUMN archived INTEGER NOT NULL DEFAULT 0");
+  }
+
+  // Migration: add updated_at column to phases if missing (existing DBs)
+  const hasUpdatedAt = columns.some((c) => c.name === "updated_at");
+  if (!hasUpdatedAt) {
+    db.exec("ALTER TABLE phases ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))");
   }
 }
