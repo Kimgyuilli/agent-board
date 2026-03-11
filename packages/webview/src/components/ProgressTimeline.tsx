@@ -1,4 +1,5 @@
 import type { ProgressLog } from "@agent-board/shared";
+import { formatRelativeTime } from "../utils/formatRelativeTime";
 
 interface ProgressTimelineProps {
   logs: ProgressLog[];
@@ -11,20 +12,6 @@ const TYPE_LABELS: Record<string, { icon: string; label: string }> = {
   blocked: { icon: "\u26A0", label: "\uCC28\uB2E8" },
   note: { icon: "\u270E", label: "\uBA54\uBAA8" },
 };
-
-function formatRelativeTime(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const diffMin = Math.floor(diffMs / 60_000);
-
-  if (diffMin < 1) return "\uBC29\uAE08";
-  if (diffMin < 60) return `${diffMin}\uBD84 \uC804`;
-  const diffHour = Math.floor(diffMin / 60);
-  if (diffHour < 24) return `${diffHour}\uC2DC\uAC04 \uC804`;
-  const diffDay = Math.floor(diffHour / 24);
-  return `${diffDay}\uC77C \uC804`;
-}
 
 export default function ProgressTimeline({ logs, loading }: ProgressTimelineProps) {
   if (loading) {

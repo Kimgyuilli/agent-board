@@ -3,6 +3,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { Phase, Task, TaskStatus } from "@agent-board/shared";
 import SortableTaskCard from "./SortableTaskCard";
+import { formatRelativeTime } from "../utils/formatRelativeTime";
 
 interface PhaseColumnProps {
   phase: Phase;
@@ -30,6 +31,9 @@ function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange }: PhaseColumnP
         )}
         <span className="phase-count">{tasks.length}</span>
       </div>
+      {phase.updated_at && (
+        <div className="phase-updated-at">{formatRelativeTime(phase.updated_at)}</div>
+      )}
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
