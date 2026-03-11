@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "agent-board": {
+      "command": "node",
+      "args": ["packages/mcp-server/dist/index.js"],
+      "env": {
+        "AGENT_BOARD_DB": ".agent-board/board.db"
+      }
+    }
+  }
+}
