@@ -64,6 +64,7 @@ export type BoardRpcMethod = keyof BoardRpcMethods;
 // === JSON-RPC 에러 코드 ===
 
 export const RPC_ERROR = {
+  PARSE_ERROR: -32700,
   METHOD_NOT_FOUND: -32601,
   SERVER_ERROR: -32000,
 } as const;

@@ -2,6 +2,7 @@ import { createInterface } from "readline";
 import * as path from "path";
 import * as fs from "fs";
 import type { RpcRequest } from "@agent-board/shared";
+import { RPC_ERROR } from "@agent-board/shared";
 import { getDatabase, closeDatabase } from "./db/connection.js";
 import { dispatch } from "./board-handler.js";
 
@@ -39,6 +40,8 @@ function main(): void {
       request = JSON.parse(line);
     } catch {
       process.stderr.write(`[board-server] parse error: ${line}\n`);
+      const errResp = { jsonrpc: "2.0", id: null, error: { code: RPC_ERROR.PARSE_ERROR, message: "Invalid JSON" } };
+      process.stdout.write(JSON.stringify(errResp) + "\n");
       return;
     }
 
