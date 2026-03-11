@@ -16,6 +16,11 @@ export interface UseTaskDetailReturn {
   isDirty: boolean;
 }
 
+/**
+ * 태스크 상세 모달의 편집 상태를 관리하는 훅.
+ * 선택된 태스크의 title, description, assigned_agent 필드를 편집하고
+ * isDirty로 변경 여부를 추적한다.
+ */
 export function useTaskDetail(): UseTaskDetailReturn {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);

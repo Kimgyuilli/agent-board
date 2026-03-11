@@ -61,6 +61,11 @@ function reorderTasksInPhase(
   );
 }
 
+/**
+ * @dnd-kit 기반 드래그앤드롭 로직 훅.
+ * 같은 Phase 내 재정렬과 크로스 Phase 이동을 지원하며,
+ * 드래그 중 낙관적 업데이트를 적용하고 실패 시 rollback한다.
+ */
 export function useDragAndDrop({
   tasks,
   onMoveTask,
@@ -162,15 +167,15 @@ export function useDragAndDrop({
         const activeIndex = tasksInPhase.findIndex((t) => t.id === taskId);
 
         if (activeIndex >= 0 && overIndex >= 0) {
-          // Same column reorder
+          // 같은 칼럼 내 재정렬: arrayMove로 순서 변경 후 새 인덱스를 position으로 사용
           const reordered = arrayMove(tasksInPhase, activeIndex, overIndex);
           position = reordered.findIndex((t) => t.id === taskId);
         } else {
-          // Cross-column: insert at over's position
+          // 크로스 칼럼 이동: 드롭 대상 태스크의 위치에 삽입
           position = overIndex >= 0 ? overIndex : tasksInPhase.length;
         }
       } else {
-        // Dropped on empty phase container
+        // Phase 컨테이너에 직접 드롭 (빈 Phase 또는 태스크 사이 아닌 곳) → 맨 끝에 추가
         position = tasksInPhase.length;
       }
 

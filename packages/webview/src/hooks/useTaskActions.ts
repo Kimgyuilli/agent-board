@@ -10,6 +10,10 @@ export interface TaskActions {
   ): void;
 }
 
+/**
+ * webview → extension 방향의 태스크 액션 메시지를 전송하는 훅.
+ * moveTask, updateTaskStatus, updateTask를 postMessage로 fire-and-forget 전송한다.
+ */
 export function useTaskActions(
   postMessage: (msg: WebviewToExtensionMessage) => void,
 ): TaskActions {
