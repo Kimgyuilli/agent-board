@@ -27,7 +27,7 @@ export type RpcResponse = RpcSuccessResponse | RpcErrorResponse;
 
 export interface BoardRpcMethods {
   getInitData: {
-    params: { projectId?: number };
+    params: { projectId?: number; includeArchived?: boolean };
     result: { phases: Phase[]; tasks: Task[] };
   };
   moveTask: {

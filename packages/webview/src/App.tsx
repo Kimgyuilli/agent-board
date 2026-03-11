@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { TaskStatus } from "@agent-board/shared";
 import { useBoardData } from "./hooks/useBoardData";
 import { useTaskActions } from "./hooks/useTaskActions";
@@ -12,6 +12,7 @@ import EmptyState from "./components/EmptyState";
 export default function App() {
   const { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler } =
     useBoardData();
+  const [showArchived, setShowArchived] = useState(false);
   const actions = useTaskActions(postMessage);
   const detail = useTaskDetail();
   const progressLogs = useProgressLogs(detail.selectedTask?.id ?? null, postMessage);
@@ -71,10 +72,22 @@ export default function App() {
   return (
     <div className="app-container">
       <header
-        className="flex items-center border-b px-4 py-2"
+        className="flex items-center justify-between border-b px-4 py-2"
         style={{ borderColor: "var(--vscode-panel-border)" }}
       >
         <h1 className="text-sm font-semibold">Agent Board</h1>
+        <button
+          className="flex items-center gap-1 rounded px-2 py-1 text-xs opacity-70 hover:opacity-100"
+          style={{ background: showArchived ? "var(--vscode-button-secondaryBackground)" : "transparent" }}
+          onClick={() => {
+            const next = !showArchived;
+            setShowArchived(next);
+            postMessage({ type: "toggle-archive-visibility", show: next });
+          }}
+          title={showArchived ? "Hide archived phases" : "Show archived phases"}
+        >
+          <span>{showArchived ? "Hide Archived" : "Show Archived"}</span>
+        </button>
       </header>
       <KanbanBoard
         phases={phases}

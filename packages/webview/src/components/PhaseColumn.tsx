@@ -20,9 +20,14 @@ function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange }: PhaseColumnP
   const taskIds = useMemo(() => tasks.map((t) => `task-${t.id}`), [tasks]);
 
   return (
-    <div className="phase-column">
+    <div className={`phase-column${phase.archived ? " opacity-50" : ""}`}>
       <div className="phase-header">
         <span className="text-xs font-semibold uppercase">{phase.title}</span>
+        {phase.archived === 1 && (
+          <span className="ml-1 rounded px-1 text-[10px]" style={{ background: "var(--vscode-badge-background)", color: "var(--vscode-badge-foreground)" }}>
+            Archived
+          </span>
+        )}
         <span className="phase-count">{tasks.length}</span>
       </div>
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>

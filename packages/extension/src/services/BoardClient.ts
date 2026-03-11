@@ -11,7 +11,7 @@ import type {
 import { ProcessManager } from "./ProcessManager.js";
 
 export interface IBoardService extends vscode.Disposable {
-  getInitData(projectId?: number): Promise<{ phases: Phase[]; tasks: Task[] }>;
+  getInitData(projectId?: number, includeArchived?: boolean): Promise<{ phases: Phase[]; tasks: Task[] }>;
   moveTask(taskId: number, targetPhaseId: number, position: number): Promise<Task[]>;
   updateTaskStatus(taskId: number, status: TaskStatus): Promise<Task>;
   updateTask(
@@ -54,8 +54,8 @@ export class BoardClient implements IBoardService {
     this._processManager.start();
   }
 
-  async getInitData(projectId?: number): Promise<{ phases: Phase[]; tasks: Task[] }> {
-    return this._call("getInitData", { projectId });
+  async getInitData(projectId?: number, includeArchived?: boolean): Promise<{ phases: Phase[]; tasks: Task[] }> {
+    return this._call("getInitData", { projectId, includeArchived });
   }
 
   async moveTask(taskId: number, targetPhaseId: number, position: number): Promise<Task[]> {

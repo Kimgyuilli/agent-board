@@ -72,10 +72,16 @@ export interface ArchivePhaseMessage {
   archived: boolean;
 }
 
+export interface ToggleArchiveVisibilityMessage {
+  type: "toggle-archive-visibility";
+  show: boolean;
+}
+
 export type WebviewToExtensionMessage =
   | MoveTaskMessage
   | UpdateTaskStatusMessage
   | UpdateTaskMessage
   | RequestRefreshMessage
   | RequestProgressLogsMessage
-  | ArchivePhaseMessage;
+  | ArchivePhaseMessage
+  | ToggleArchiveVisibilityMessage;

@@ -26,8 +26,12 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
   getInitData(db, params) {
     const pid = params.projectId ?? getOrCreateDefaultProject(db);
 
+    const query = params.includeArchived
+      ? `SELECT * FROM phases WHERE project_id = ? ORDER BY "order"`
+      : `SELECT * FROM phases WHERE project_id = ? AND archived = 0 ORDER BY "order"`;
+
     const phases = db
-      .prepare(`SELECT * FROM phases WHERE project_id = ? AND archived = 0 ORDER BY "order"`)
+      .prepare(query)
       .all(pid) as BoardRpcMethods["getInitData"]["result"]["phases"];
 
     const { tasks } = listTasks(db, { project_id: pid });
@@ -39,7 +43,7 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
 
     const pid = getOrCreateDefaultProject(db);
     const phases = db
-      .prepare(`SELECT * FROM phases WHERE project_id = ? AND archived = 0 ORDER BY "order"`)
+      .prepare(`SELECT * FROM phases WHERE project_id = ? ORDER BY "order"`)
       .all(pid) as BoardRpcMethods["archivePhase"]["result"]["phases"];
 
     const { tasks } = listTasks(db, { project_id: pid });

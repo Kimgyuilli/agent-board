@@ -212,8 +212,10 @@ describe("dispatch — archivePhase", () => {
     const result = expectResult<{ phases: Phase[]; tasks: Task[] }>(
       rpc("archivePhase", { phaseId: phase1Id, archived: true }),
     );
-    // Phase 1 is archived, so it should not appear
-    expect(result.phases.every((p) => p.id !== phase1Id)).toBe(true);
+    // archivePhase returns all phases (including archived) so UI can show toggle
+    const archivedPhase = result.phases.find((p) => p.id === phase1Id);
+    expect(archivedPhase).toBeDefined();
+    expect(archivedPhase!.archived).toBe(1);
   });
 
   it("should return error when tasks not all done", () => {
@@ -224,7 +226,7 @@ describe("dispatch — archivePhase", () => {
     expect(error.message).toContain("not done");
   });
 
-  it("should exclude archived phases from getInitData", () => {
+  it("should exclude archived phases from getInitData by default", () => {
     const { projectId, phase1Id, phase2Id } = seed();
     db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phase1Id);
     db.prepare("UPDATE phases SET archived = 1 WHERE id = ?").run(phase1Id);
@@ -234,8 +236,20 @@ describe("dispatch — archivePhase", () => {
     );
     expect(result.phases).toHaveLength(1);
     expect(result.phases[0].id).toBe(phase2Id);
-    // Tasks from archived phase should also be excluded
-    expect(result.tasks.every((t) => t.phase_id !== phase1Id)).toBe(true);
+  });
+
+  it("should include archived phases when includeArchived is true", () => {
+    const { projectId, phase1Id, phase2Id } = seed();
+    db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phase1Id);
+    db.prepare("UPDATE phases SET archived = 1 WHERE id = ?").run(phase1Id);
+
+    const result = expectResult<{ phases: Phase[]; tasks: Task[] }>(
+      rpc("getInitData", { projectId, includeArchived: true }),
+    );
+    expect(result.phases).toHaveLength(2);
+    const ids = result.phases.map((p) => p.id);
+    expect(ids).toContain(phase1Id);
+    expect(ids).toContain(phase2Id);
   });
 });
 

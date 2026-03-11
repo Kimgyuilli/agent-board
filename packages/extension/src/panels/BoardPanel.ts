@@ -8,6 +8,7 @@ import type { IBoardService } from "../services/BoardClient.js";
 
 export class BoardPanelProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
+  private _showArchived = false;
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
@@ -49,8 +50,14 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
     try {
       switch (message.type) {
         case "request-refresh": {
-          const data = await this._service.getInitData();
+          const data = await this._service.getInitData(undefined, this._showArchived);
           this.postMessage({ type: "init-data", ...data });
+          break;
+        }
+        case "toggle-archive-visibility": {
+          this._showArchived = message.show;
+          const toggleData = await this._service.getInitData(undefined, this._showArchived);
+          this.postMessage({ type: "init-data", ...toggleData });
           break;
         }
         case "move-task": {
