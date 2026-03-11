@@ -27,7 +27,7 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
     const pid = params.projectId ?? getOrCreateDefaultProject(db);
 
     const query = params.includeArchived
-      ? `SELECT * FROM phases WHERE project_id = ? ORDER BY archived ASC, "order" ASC`
+      ? `SELECT * FROM phases WHERE project_id = ? ORDER BY archived ASC, CASE WHEN archived = 0 THEN "order" END ASC, CASE WHEN archived = 1 THEN updated_at END DESC`
       : `SELECT * FROM phases WHERE project_id = ? AND archived = 0 ORDER BY "order" ASC`;
 
     const phases = db
@@ -46,7 +46,7 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
 
     const pid = getOrCreateDefaultProject(db);
     const phases = db
-      .prepare(`SELECT * FROM phases WHERE project_id = ? ORDER BY archived ASC, "order" ASC`)
+      .prepare(`SELECT * FROM phases WHERE project_id = ? ORDER BY archived ASC, CASE WHEN archived = 0 THEN "order" END ASC, CASE WHEN archived = 1 THEN updated_at END DESC`)
       .all(pid) as BoardRpcMethods["archivePhase"]["result"]["phases"];
 
     const { tasks } = listTasks(db, { project_id: pid, include_archived: true });
