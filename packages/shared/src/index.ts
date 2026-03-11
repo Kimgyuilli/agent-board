@@ -42,6 +42,8 @@ export type {
   ListTasksResult,
   ArchivePhaseParams,
   ArchivePhaseResult,
+  BatchOperation,
+  BatchResult,
 } from "./mcp.js";
 
 export type {
