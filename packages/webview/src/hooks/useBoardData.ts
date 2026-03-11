@@ -14,6 +14,7 @@ import { useVSCodeApi } from "./useVSCodeApi";
 export function useBoardData() {
   const [phases, setPhases] = useState<Phase[] | null>(null);
   const [tasks, setTasks] = useState<Task[] | null>(null);
+  const [archivedPhaseCount, setArchivedPhaseCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const snapshotRef = useRef<Task[] | null>(null);
   const progressHandlerRef = useRef<((msg: ExtensionToWebviewMessage) => void) | null>(null);
@@ -23,6 +24,7 @@ export function useBoardData() {
       case "init-data":
         setPhases(msg.phases);
         setTasks(msg.tasks);
+        setArchivedPhaseCount(msg.archivedPhaseCount);
         setLoading(false);
         break;
       case "tasks-updated":
@@ -81,5 +83,5 @@ export function useBoardData() {
     progressHandlerRef.current = handler;
   }, []);
 
-  return { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, available };
+  return { phases, tasks, archivedPhaseCount, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, available };
 }

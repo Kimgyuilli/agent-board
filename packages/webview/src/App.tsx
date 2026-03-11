@@ -10,7 +10,7 @@ import TaskDetailModal from "./components/TaskDetailModal";
 import EmptyState from "./components/EmptyState";
 
 export default function App() {
-  const { phases, tasks, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, available } =
+  const { phases, tasks, archivedPhaseCount, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, available } =
     useBoardData();
   const [showArchived, setShowArchived] = useState(false);
   const actions = useTaskActions(postMessage);
@@ -72,7 +72,13 @@ export default function App() {
   if (!phases?.length) {
     return (
       <div className="app-container">
-        <EmptyState />
+        <EmptyState
+          archivedPhaseCount={archivedPhaseCount}
+          onShowArchived={() => {
+            setShowArchived(true);
+            postMessage({ type: "toggle-archive-visibility", show: true });
+          }}
+        />
       </div>
     );
   }
@@ -94,7 +100,7 @@ export default function App() {
           }}
           title={showArchived ? "Hide archived phases" : "Show archived phases"}
         >
-          <span>{showArchived ? "Hide Archived" : "Show Archived"}</span>
+          <span>{showArchived ? "Hide Archived" : `Show Archived${archivedPhaseCount > 0 ? ` (${archivedPhaseCount})` : ""}`}</span>
         </button>
       </header>
       <KanbanBoard
