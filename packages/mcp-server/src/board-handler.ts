@@ -27,14 +27,17 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
     const pid = params.projectId ?? getOrCreateDefaultProject(db);
 
     const query = params.includeArchived
-      ? `SELECT * FROM phases WHERE project_id = ? ORDER BY "order"`
-      : `SELECT * FROM phases WHERE project_id = ? AND archived = 0 ORDER BY "order"`;
+      ? `SELECT * FROM phases WHERE project_id = ? ORDER BY archived ASC, "order" ASC`
+      : `SELECT * FROM phases WHERE project_id = ? AND archived = 0 ORDER BY "order" ASC`;
 
     const phases = db
       .prepare(query)
       .all(pid) as BoardRpcMethods["getInitData"]["result"]["phases"];
 
-    const { tasks } = listTasks(db, { project_id: pid });
+    const { tasks } = listTasks(db, {
+      project_id: pid,
+      include_archived: params.includeArchived,
+    });
     return { phases, tasks };
   },
 
@@ -43,10 +46,10 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
 
     const pid = getOrCreateDefaultProject(db);
     const phases = db
-      .prepare(`SELECT * FROM phases WHERE project_id = ? ORDER BY "order"`)
+      .prepare(`SELECT * FROM phases WHERE project_id = ? ORDER BY archived ASC, "order" ASC`)
       .all(pid) as BoardRpcMethods["archivePhase"]["result"]["phases"];
 
-    const { tasks } = listTasks(db, { project_id: pid });
+    const { tasks } = listTasks(db, { project_id: pid, include_archived: true });
     return { phases, tasks };
   },
 
