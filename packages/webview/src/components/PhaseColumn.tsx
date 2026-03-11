@@ -31,7 +31,7 @@ function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange }: PhaseColumnP
         <span className="phase-count">{tasks.length}</span>
       </div>
       {phase.updated_at && (
-        <div className="phase-updated-at">{new Date(phase.updated_at + "Z").toLocaleString()}</div>
+        <div className="phase-updated-at">수정: {new Date(phase.updated_at + "Z").toLocaleString()}</div>
       )}
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div
