@@ -37,7 +37,7 @@ function ConfirmDialog({
   if (!open) return null;
 
   return (
-    <div className="modal-backdrop" onClick={onCancel}>
+    <div className="modal-backdrop" onClick={variant === "danger" ? undefined : onCancel}>
       <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="confirm-dialog__header">
           <h2 className="confirm-dialog__title">{title}</h2>

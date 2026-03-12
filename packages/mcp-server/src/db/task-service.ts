@@ -388,9 +388,14 @@ export function listTasks(
 
 /**
  * 태스크를 삭제한다 (CASCADE로 의존관계, 로그도 함께 삭제).
+ *
+ * DB 스키마의 ON DELETE CASCADE 설정에 의존:
+ * - task_dependencies.task_id / depends_on_task_id → tasks.id (CASCADE)
+ * - progress_logs.task_id → tasks.id (CASCADE)
+ *
  * @param db - SQLite 데이터베이스 인스턴스
  * @param taskId - 삭제할 태스크 ID
- * @returns 삭제 후 전체 tasks 목록
+ * @returns 삭제 후 전체 tasks 목록 (소속 Phase가 이미 삭제된 경우 빈 배열)
  * @throws {Error} 태스크가 없을 때
  */
 export function deleteTask(db: Database.Database, taskId: number): { tasks: Task[] } {

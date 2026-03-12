@@ -157,6 +157,12 @@ export function getProjectSummary(
 
 /**
  * Phase를 삭제한다 (CASCADE로 소속 태스크, 의존관계, 로그도 함께 삭제).
+ *
+ * DB 스키마의 ON DELETE CASCADE 설정에 의존:
+ * - tasks.phase_id → phases.id (CASCADE)
+ * - task_dependencies.task_id / depends_on_task_id → tasks.id (CASCADE)
+ * - progress_logs.task_id → tasks.id (CASCADE)
+ *
  * @param db - SQLite 데이터베이스 인스턴스
  * @param phaseId - 삭제할 Phase ID
  * @returns 삭제 후 전체 phases, tasks 목록

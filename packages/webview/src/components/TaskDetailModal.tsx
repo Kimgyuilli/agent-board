@@ -50,11 +50,9 @@ export default function TaskDetailModal({
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (showDeleteConfirm) {
-          setShowDeleteConfirm(false);
-        } else {
-          onClose();
-        }
+        // ConfirmDialog가 열려 있으면 자체 Escape 핸들러에 위임
+        if (showDeleteConfirm) return;
+        onClose();
         return;
       }
 

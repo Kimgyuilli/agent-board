@@ -86,7 +86,7 @@ function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange, onArchiveToggl
       <ConfirmDialog
         open={showDeleteConfirm}
         title="Delete Phase"
-        message={`이 Phase와 소속된 ${tasks.length}개의 태스크가 모두 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`}
+        message={tasks.length > 0 ? `이 Phase와 소속된 ${tasks.length}개의 태스크가 모두 삭제됩니다. 이 작업은 되돌릴 수 없습니다.` : "이 Phase를 삭제합니다. 이 작업은 되돌릴 수 없습니다."}
         confirmLabel="삭제"
         cancelLabel="취소"
         variant="danger"
