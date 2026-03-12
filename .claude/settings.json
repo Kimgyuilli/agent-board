@@ -1,4 +1,19 @@
 {
+  "permissions": {
+    "allow": [
+      "mcp__agent-board__sync",
+      "mcp__agent-board__next",
+      "mcp__agent-board__claim",
+      "mcp__agent-board__complete",
+      "mcp__agent-board__block",
+      "mcp__agent-board__context",
+      "mcp__agent-board__add_phase",
+      "mcp__agent-board__add_task",
+      "mcp__agent-board__list_tasks",
+      "mcp__agent-board__batch",
+      "mcp__agent-board__archive_phase"
+    ]
+  },
   "hooks": {
     "TeammateIdle": [
       {
