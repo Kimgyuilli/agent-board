@@ -5,12 +5,14 @@ import {
   getOrCreateDefaultProject,
   getProjectSummary,
   archivePhase,
+  deletePhase,
   getNextTasks,
   claimTask,
   completeTask,
   blockTask,
   getTaskContext,
   addTask,
+  deleteTask,
   listTasks,
 } from "../db/service.js";
 import { wouldCreateCycle } from "../db/cycle-detection.js";
@@ -516,5 +518,127 @@ describe("full workflow: claim → complete → unblock", () => {
     expect(blocked.task.blocked_reason).toBe("Missing config");
 
     db.close();
+  });
+});
+
+describe("deletePhase", () => {
+  let db: Database.Database;
+  beforeEach(() => { db = createTestDb(); });
+
+  it("should delete a phase and cascade delete its tasks", () => {
+    const { projectId, phaseId } = seedProjectAndPhase(db);
+    const taskId = db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phaseId).lastInsertRowid as number;
+    db.prepare("INSERT INTO progress_logs (task_id, agent_id, type) VALUES (?, 'agent-1', 'completed')").run(taskId);
+
+    const result = deletePhase(db, phaseId);
+    expect(result.phases).toHaveLength(0);
+    expect(result.tasks).toHaveLength(0);
+
+    // Verify cascade deletion
+    const phase = db.prepare("SELECT * FROM phases WHERE id = ?").get(phaseId);
+    expect(phase).toBeUndefined();
+
+    const tasks = db.prepare("SELECT * FROM tasks WHERE id = ?").all(taskId);
+    expect(tasks).toHaveLength(0);
+
+    const logs = db.prepare("SELECT * FROM progress_logs WHERE task_id = ?").all(taskId);
+    expect(logs).toHaveLength(0);
+  });
+
+  it("should delete phase with task dependencies", () => {
+    const { projectId, phaseId } = seedProjectAndPhase(db);
+    const t1 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T1', 0)").run(phaseId).lastInsertRowid as number;
+    const t2 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T2', 1)").run(phaseId).lastInsertRowid as number;
+    db.prepare("INSERT INTO task_dependencies (task_id, depends_on_task_id) VALUES (?, ?)").run(t2, t1);
+
+    const result = deletePhase(db, phaseId);
+    expect(result.phases).toHaveLength(0);
+    expect(result.tasks).toHaveLength(0);
+
+    // Verify dependencies are deleted
+    const deps = db.prepare("SELECT * FROM task_dependencies WHERE task_id = ?").all(t2);
+    expect(deps).toHaveLength(0);
+  });
+
+  it("should throw for non-existent phase", () => {
+    expect(() => deletePhase(db, 999)).toThrow("Phase 999 not found");
+  });
+
+  it("should return remaining phases and tasks after deletion", () => {
+    const { projectId, phaseId: p1 } = seedProjectAndPhase(db, "Phase 1");
+    const p2 = db.prepare('INSERT INTO phases (project_id, title, "order") VALUES (?, ?, 1)').run(projectId, "Phase 2").lastInsertRowid as number;
+    db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T1', 0)").run(p1);
+    db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T2', 0)").run(p2);
+
+    const result = deletePhase(db, p1);
+    expect(result.phases).toHaveLength(1);
+    expect(result.phases[0].id).toBe(p2);
+    expect(result.tasks).toHaveLength(1);
+    expect(result.tasks[0].title).toBe("T2");
+  });
+});
+
+describe("deleteTask", () => {
+  let db: Database.Database;
+  beforeEach(() => { db = createTestDb(); });
+
+  it("should delete a task and cascade delete its logs", () => {
+    const { phaseId } = seedProjectAndPhase(db);
+    const taskId = db.prepare("INSERT INTO tasks (phase_id, title, status, assigned_agent, position) VALUES (?, 'T1', 'done', 'agent-1', 0)").run(phaseId).lastInsertRowid as number;
+    db.prepare("INSERT INTO progress_logs (task_id, agent_id, type) VALUES (?, 'agent-1', 'completed')").run(taskId);
+
+    const result = deleteTask(db, taskId);
+    expect(result.tasks).toHaveLength(0);
+
+    // Verify cascade deletion
+    const task = db.prepare("SELECT * FROM tasks WHERE id = ?").get(taskId);
+    expect(task).toBeUndefined();
+
+    const logs = db.prepare("SELECT * FROM progress_logs WHERE task_id = ?").all(taskId);
+    expect(logs).toHaveLength(0);
+  });
+
+  it("should delete task and its dependencies", () => {
+    const { phaseId } = seedProjectAndPhase(db);
+    const t1 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T1', 0)").run(phaseId).lastInsertRowid as number;
+    const t2 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T2', 1)").run(phaseId).lastInsertRowid as number;
+    db.prepare("INSERT INTO task_dependencies (task_id, depends_on_task_id) VALUES (?, ?)").run(t2, t1);
+
+    const result = deleteTask(db, t2);
+    expect(result.tasks).toHaveLength(1);
+    expect(result.tasks[0].id).toBe(t1);
+
+    // Verify dependencies are deleted
+    const deps = db.prepare("SELECT * FROM task_dependencies WHERE task_id = ?").all(t2);
+    expect(deps).toHaveLength(0);
+  });
+
+  it("should delete task that is a dependency of another task", () => {
+    const { phaseId } = seedProjectAndPhase(db);
+    const t1 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T1', 0)").run(phaseId).lastInsertRowid as number;
+    const t2 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T2', 1)").run(phaseId).lastInsertRowid as number;
+    db.prepare("INSERT INTO task_dependencies (task_id, depends_on_task_id) VALUES (?, ?)").run(t2, t1);
+
+    const result = deleteTask(db, t1);
+    expect(result.tasks).toHaveLength(1);
+    expect(result.tasks[0].id).toBe(t2);
+
+    // Verify dependencies are deleted (CASCADE)
+    const deps = db.prepare("SELECT * FROM task_dependencies WHERE depends_on_task_id = ?").all(t1);
+    expect(deps).toHaveLength(0);
+  });
+
+  it("should throw for non-existent task", () => {
+    expect(() => deleteTask(db, 999)).toThrow("Task 999 not found");
+  });
+
+  it("should return remaining tasks after deletion", () => {
+    const { phaseId } = seedProjectAndPhase(db);
+    const t1 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T1', 0)").run(phaseId).lastInsertRowid as number;
+    const t2 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T2', 1)").run(phaseId).lastInsertRowid as number;
+
+    const result = deleteTask(db, t1);
+    expect(result.tasks).toHaveLength(1);
+    expect(result.tasks[0].id).toBe(t2);
   });
 });

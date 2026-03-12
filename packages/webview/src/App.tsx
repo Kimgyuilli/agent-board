@@ -37,6 +37,31 @@ export default function App() {
     [actions],
   );
 
+  const handleArchiveToggle = useCallback(
+    (phaseId: number, archived: boolean) => {
+      postMessage({ type: "archive-phase", phaseId, archived });
+    },
+    [postMessage],
+  );
+
+  const handleDeletePhase = useCallback(
+    (phaseId: number) => {
+      takeSnapshot();
+      applyOptimistic((prev) => prev.filter((t) => t.phase_id !== phaseId));
+      actions.deletePhase(phaseId);
+    },
+    [takeSnapshot, applyOptimistic, actions],
+  );
+
+  const handleDeleteTask = useCallback(
+    (taskId: number) => {
+      takeSnapshot();
+      applyOptimistic((prev) => prev.filter((t) => t.id !== taskId));
+      actions.deleteTask(taskId);
+    },
+    [takeSnapshot, applyOptimistic, actions],
+  );
+
   const handleSave = useCallback(() => {
     if (!detail.selectedTask || !detail.editState || !detail.isDirty) return;
     const updates: Record<string, string | null> = {};
@@ -109,6 +134,8 @@ export default function App() {
         dnd={dnd}
         onTaskClick={detail.openTask}
         onStatusChange={handleStatusChange}
+        onArchiveToggle={handleArchiveToggle}
+        onDeletePhase={handleDeletePhase}
       />
       {detail.selectedTask && detail.editState && (
         <TaskDetailModal
@@ -122,6 +149,7 @@ export default function App() {
           }}
           onSave={handleSave}
           onClose={detail.closeTask}
+          onDeleteTask={handleDeleteTask}
           progressLogs={progressLogs.logs}
           progressLogsLoading={progressLogs.loading}
         />

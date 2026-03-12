@@ -13,9 +13,11 @@ interface KanbanBoardProps {
   dnd: DndState;
   onTaskClick: (task: Task) => void;
   onStatusChange: (taskId: number, status: TaskStatus) => void;
+  onArchiveToggle: (phaseId: number, archived: boolean) => void;
+  onDeletePhase: (phaseId: number) => void;
 }
 
-function KanbanBoard({ phases, tasks, dnd, onTaskClick, onStatusChange }: KanbanBoardProps) {
+function KanbanBoard({ phases, tasks, dnd, onTaskClick, onStatusChange, onArchiveToggle, onDeletePhase }: KanbanBoardProps) {
   const tasksByPhase = useMemo(() => {
     const map = new Map<number, Task[]>();
     for (const task of tasks) {
@@ -54,6 +56,8 @@ function KanbanBoard({ phases, tasks, dnd, onTaskClick, onStatusChange }: Kanban
             tasks={tasksByPhase.get(phase.id) ?? []}
             onTaskClick={onTaskClick}
             onStatusChange={onStatusChange}
+            onArchiveToggle={onArchiveToggle}
+            onDeletePhase={onDeletePhase}
           />
         ))}
       </div>

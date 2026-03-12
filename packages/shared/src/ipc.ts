@@ -49,6 +49,14 @@ export interface BoardRpcMethods {
     params: { phaseId: number; archived: boolean };
     result: { phases: Phase[]; tasks: Task[] };
   };
+  deletePhase: {
+    params: { phaseId: number };
+    result: { phases: Phase[]; tasks: Task[] };
+  };
+  deleteTask: {
+    params: { taskId: number };
+    result: { tasks: Task[] };
+  };
   getChanges: {
     params: { since: string };
     result: { tasks: Task[]; logs: ProgressLog[]; timestamp: string };

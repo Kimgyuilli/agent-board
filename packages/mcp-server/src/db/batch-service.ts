@@ -1,7 +1,7 @@
 import type Database from "better-sqlite3";
 import type { BatchOperation, BatchResult } from "@agent-board/shared";
-import { addPhase, archivePhase } from "./project-service.js";
-import { addTask, claimTask, completeTask, blockTask } from "./task-service.js";
+import { addPhase, archivePhase, deletePhase } from "./project-service.js";
+import { addTask, claimTask, completeTask, blockTask, deleteTask } from "./task-service.js";
 
 /** Resolve a placeholder like "$0" to the ID from a previous result */
 function resolveId(
@@ -83,6 +83,18 @@ export function executeBatch(
           const taskId = resolveId(op.task_id, results, i);
           const result = blockTask(db, taskId, op.reason);
           id = result.task.id;
+          break;
+        }
+        case "delete_phase": {
+          const phaseId = resolveId(op.phase_id, results, i);
+          deletePhase(db, phaseId);
+          id = phaseId;
+          break;
+        }
+        case "delete_task": {
+          const taskId = resolveId(op.task_id, results, i);
+          deleteTask(db, taskId);
+          id = taskId;
           break;
         }
         default:

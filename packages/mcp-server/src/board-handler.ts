@@ -10,6 +10,8 @@ import type { Task } from "@agent-board/shared";
 import {
   getOrCreateDefaultProject,
   archivePhase,
+  deletePhase,
+  deleteTask,
   listTasks,
   getChangesSince,
   getProgressLogs,
@@ -137,6 +139,14 @@ const handlers: { [M in BoardRpcMethod]: Handler<M> } = {
   getProgressLogs(db, params) {
     const logs = getProgressLogs(db, params.taskId, params.limit);
     return { logs };
+  },
+
+  deletePhase(db, params) {
+    return deletePhase(db, params.phaseId);
+  },
+
+  deleteTask(db, params) {
+    return deleteTask(db, params.taskId);
   },
 };
 

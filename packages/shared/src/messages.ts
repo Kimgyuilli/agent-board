@@ -80,6 +80,16 @@ export interface ArchivePhaseMessage {
   archived: boolean;
 }
 
+export interface DeletePhaseMessage {
+  type: "delete-phase";
+  phaseId: number;
+}
+
+export interface DeleteTaskMessage {
+  type: "delete-task";
+  taskId: number;
+}
+
 export interface ToggleArchiveVisibilityMessage {
   type: "toggle-archive-visibility";
   show: boolean;
@@ -92,4 +102,6 @@ export type WebviewToExtensionMessage =
   | RequestRefreshMessage
   | RequestProgressLogsMessage
   | ArchivePhaseMessage
+  | DeletePhaseMessage
+  | DeleteTaskMessage
   | ToggleArchiveVisibilityMessage;

@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Task, TaskStatus, ProgressLog } from "@agent-board/shared";
 import StatusDropdown from "./StatusDropdown";
 import ProgressTimeline from "./ProgressTimeline";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface EditState {
   title: string;
@@ -17,6 +18,7 @@ interface TaskDetailModalProps {
   onStatusChange: (status: TaskStatus) => void;
   onSave: () => void;
   onClose: () => void;
+  onDeleteTask: (taskId: number) => void;
   progressLogs?: ProgressLog[];
   progressLogsLoading?: boolean;
 }
@@ -29,13 +31,30 @@ export default function TaskDetailModal({
   onStatusChange,
   onSave,
   onClose,
+  onDeleteTask,
   progressLogs,
   progressLogsLoading,
 }: TaskDetailModalProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    setShowDeleteConfirm(false);
+    onDeleteTask(task.id);
+    onClose();
+  };
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        if (showDeleteConfirm) {
+          setShowDeleteConfirm(false);
+        } else {
+          onClose();
+        }
         return;
       }
 
@@ -60,17 +79,30 @@ export default function TaskDetailModal({
     };
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [onClose]);
+  }, [onClose, showDeleteConfirm]);
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <span className="text-sm font-semibold">Task #{task.id}</span>
-          <button className="modal-close" onClick={onClose} type="button" aria-label="닫기">
-            ✕
-          </button>
-        </div>
+    <>
+      <div className="modal-backdrop" onClick={onClose}>
+        <div className="modal-content" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <span className="text-sm font-semibold">Task #{task.id}</span>
+            <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+              <button
+                className="modal-close"
+                onClick={handleDeleteClick}
+                type="button"
+                aria-label="삭제"
+                title="Delete Task"
+                style={{ color: "var(--vscode-errorForeground)" }}
+              >
+                🗑
+              </button>
+              <button className="modal-close" onClick={onClose} type="button" aria-label="닫기">
+                ✕
+              </button>
+            </div>
+          </div>
 
         <div className="modal-body">
           <div className="modal-field">
@@ -142,5 +174,16 @@ export default function TaskDetailModal({
         </div>
       </div>
     </div>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Task"
+        message="이 태스크를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmLabel="삭제"
+        cancelLabel="취소"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
+    </>
   );
 }

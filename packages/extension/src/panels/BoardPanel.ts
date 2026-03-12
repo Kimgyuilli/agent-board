@@ -102,6 +102,17 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
           this.postMessage({ type: "tasks-updated", tasks: archiveResult.tasks });
           break;
         }
+        case "delete-phase": {
+          const deletePhaseResult = await this._service.deletePhase(message.phaseId);
+          this.postMessage({ type: "phases-updated", phases: deletePhaseResult.phases });
+          this.postMessage({ type: "tasks-updated", tasks: deletePhaseResult.tasks });
+          break;
+        }
+        case "delete-task": {
+          const deleteTaskResult = await this._service.deleteTask(message.taskId);
+          this.postMessage({ type: "tasks-updated", tasks: deleteTaskResult.tasks });
+          break;
+        }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

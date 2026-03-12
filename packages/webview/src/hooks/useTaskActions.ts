@@ -8,11 +8,13 @@ export interface TaskActions {
     taskId: number,
     updates: Partial<Pick<Task, "title" | "description" | "assigned_agent">>,
   ): void;
+  deletePhase(phaseId: number): void;
+  deleteTask(taskId: number): void;
 }
 
 /**
  * webview → extension 방향의 태스크 액션 메시지를 전송하는 훅.
- * moveTask, updateTaskStatus, updateTask를 postMessage로 fire-and-forget 전송한다.
+ * moveTask, updateTaskStatus, updateTask, deletePhase, deleteTask를 postMessage로 fire-and-forget 전송한다.
  */
 export function useTaskActions(
   postMessage: (msg: WebviewToExtensionMessage) => void,
@@ -38,5 +40,19 @@ export function useTaskActions(
     [postMessage],
   );
 
-  return { moveTask, updateTaskStatus, updateTask };
+  const deletePhase = useCallback(
+    (phaseId: number) => {
+      postMessage({ type: "delete-phase", phaseId });
+    },
+    [postMessage],
+  );
+
+  const deleteTask = useCallback(
+    (taskId: number) => {
+      postMessage({ type: "delete-task", taskId });
+    },
+    [postMessage],
+  );
+
+  return { moveTask, updateTaskStatus, updateTask, deletePhase, deleteTask };
 }

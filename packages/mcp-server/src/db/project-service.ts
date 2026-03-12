@@ -1,5 +1,5 @@
 import type Database from "better-sqlite3";
-import type { SyncResult, ArchivePhaseResult } from "@agent-board/shared";
+import type { SyncResult, ArchivePhaseResult, Phase, Task } from "@agent-board/shared";
 
 const DEFAULT_PROJECT_NAME = "Default Project";
 
@@ -153,4 +153,47 @@ export function getProjectSummary(
     .all(pid) as SyncResult["recent_logs"];
 
   return { project_name: project.name, phases, active_tasks, recent_logs };
+}
+
+/**
+ * Phase를 삭제한다 (CASCADE로 소속 태스크, 의존관계, 로그도 함께 삭제).
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param phaseId - 삭제할 Phase ID
+ * @returns 삭제 후 전체 phases, tasks 목록
+ * @throws {Error} Phase가 없을 때
+ */
+export function deletePhase(
+  db: Database.Database,
+  phaseId: number,
+): { phases: Phase[]; tasks: Task[] } {
+  const deleteOp = db.transaction(() => {
+    const phase = db.prepare("SELECT * FROM phases WHERE id = ?").get(phaseId) as
+      | { id: number; project_id: number; title: string }
+      | undefined;
+    if (!phase) throw new Error(`Phase ${phaseId} not found`);
+
+    // CASCADE로 tasks, task_dependencies, progress_logs 자동 삭제
+    db.prepare("DELETE FROM phases WHERE id = ?").run(phaseId);
+
+    // 전체 phases, tasks 반환 (archivePhase 패턴과 동일)
+    const pid = phase.project_id;
+    const phases = db
+      .prepare(
+        `SELECT * FROM phases WHERE project_id = ? ORDER BY archived ASC, CASE WHEN archived = 0 THEN "order" END ASC, CASE WHEN archived = 1 THEN updated_at END DESC`,
+      )
+      .all(pid) as Phase[];
+
+    const tasks = db
+      .prepare(
+        `SELECT t.* FROM tasks t
+         JOIN phases p ON p.id = t.phase_id
+         WHERE p.project_id = ?
+         ORDER BY p."order", t.position`,
+      )
+      .all(pid) as Task[];
+
+    return { phases, tasks };
+  });
+
+  return deleteOp();
 }

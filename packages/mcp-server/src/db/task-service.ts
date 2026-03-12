@@ -385,3 +385,42 @@ export function listTasks(
 
   return { tasks };
 }
+
+/**
+ * 태스크를 삭제한다 (CASCADE로 의존관계, 로그도 함께 삭제).
+ * @param db - SQLite 데이터베이스 인스턴스
+ * @param taskId - 삭제할 태스크 ID
+ * @returns 삭제 후 전체 tasks 목록
+ * @throws {Error} 태스크가 없을 때
+ */
+export function deleteTask(db: Database.Database, taskId: number): { tasks: Task[] } {
+  const deleteOp = db.transaction(() => {
+    const task = db.prepare("SELECT * FROM tasks WHERE id = ?").get(taskId) as Task | undefined;
+    if (!task) throw new Error(`Task ${taskId} not found`);
+
+    // CASCADE로 task_dependencies, progress_logs 자동 삭제
+    db.prepare("DELETE FROM tasks WHERE id = ?").run(taskId);
+
+    // 전체 tasks 반환
+    const phase = db.prepare("SELECT project_id FROM phases WHERE id = ?").get(task.phase_id) as
+      | { project_id: number }
+      | undefined;
+    if (!phase) {
+      // phase가 삭제된 경우 빈 배열 반환
+      return { tasks: [] };
+    }
+
+    const tasks = db
+      .prepare(
+        `SELECT t.* FROM tasks t
+         JOIN phases p ON p.id = t.phase_id
+         WHERE p.project_id = ?
+         ORDER BY p."order", t.position`,
+      )
+      .all(phase.project_id) as Task[];
+
+    return { tasks };
+  });
+
+  return deleteOp();
+}

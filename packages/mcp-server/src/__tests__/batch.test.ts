@@ -155,4 +155,69 @@ describe("executeBatch", () => {
     expect(task.status).toBe("blocked");
     expect(task.blocked_reason).toBe("API 문서 부족");
   });
+
+  it("should handle delete_phase operation", () => {
+    const { projectId } = seedProject(db);
+    const ops: BatchOperation[] = [
+      { type: "add_phase", title: "Phase to Delete" },
+      { type: "add_task", phase_id: "$0", title: "Task in Phase" },
+      { type: "delete_phase", phase_id: "$0" },
+    ];
+    const result = executeBatch(db, ops);
+    expect(result.succeeded).toBe(3);
+
+    // Verify phase and task are deleted
+    const phases = db.prepare("SELECT * FROM phases WHERE id = ?").all(result.results[0].id);
+    expect(phases).toHaveLength(0);
+
+    const tasks = db.prepare("SELECT * FROM tasks WHERE id = ?").all(result.results[1].id);
+    expect(tasks).toHaveLength(0);
+  });
+
+  it("should handle delete_task operation", () => {
+    seedProject(db);
+    const ops: BatchOperation[] = [
+      { type: "add_phase", title: "Phase H" },
+      { type: "add_task", phase_id: "$0", title: "Task to Delete" },
+      { type: "delete_task", task_id: "$1" },
+    ];
+    const result = executeBatch(db, ops);
+    expect(result.succeeded).toBe(3);
+
+    // Verify task is deleted
+    const tasks = db.prepare("SELECT * FROM tasks WHERE id = ?").all(result.results[1].id);
+    expect(tasks).toHaveLength(0);
+  });
+
+  it("should handle delete operations with numeric IDs", () => {
+    const { projectId } = seedProject(db);
+    const phaseId = db
+      .prepare('INSERT INTO phases (project_id, title, "order") VALUES (?, ?, 0)')
+      .run(projectId, "Phase to Delete").lastInsertRowid as number;
+    const taskId = db
+      .prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'Task', 0)")
+      .run(phaseId).lastInsertRowid as number;
+
+    const result = executeBatch(db, [{ type: "delete_task", task_id: taskId }]);
+    expect(result.succeeded).toBe(1);
+
+    const tasks = db.prepare("SELECT * FROM tasks WHERE id = ?").all(taskId);
+    expect(tasks).toHaveLength(0);
+  });
+
+  it("should rollback delete operations on error", () => {
+    seedProject(db);
+    const ops: BatchOperation[] = [
+      { type: "add_phase", title: "Phase I" },
+      { type: "add_task", phase_id: "$0", title: "Task" },
+      { type: "delete_phase", phase_id: "$0" },
+      { type: "delete_phase", phase_id: 999 }, // non-existent phase
+    ];
+
+    expect(() => executeBatch(db, ops)).toThrow();
+
+    // Verify nothing was deleted (rollback)
+    const phases = db.prepare("SELECT * FROM phases").all();
+    expect(phases.length).toBe(0);
+  });
 });

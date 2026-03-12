@@ -125,6 +125,8 @@ export type BatchOperation =
   | { type: "add_phase"; title: string; project_id?: number | string; order?: number }
   | { type: "add_task"; phase_id: number | string; title: string; description?: string; depends_on?: Array<number | string>; position?: number }
   | { type: "archive_phase"; phase_id: number | string; archived: boolean }
+  | { type: "delete_phase"; phase_id: number | string }
+  | { type: "delete_task"; task_id: number | string }
   | { type: "claim"; task_id: number | string; agent_id: string }
   | { type: "complete"; task_id: number | string; content?: string; files_changed?: string }
   | { type: "block"; task_id: number | string; reason: string };
