@@ -19,16 +19,16 @@ Manage AI agent development tasks with a real-time kanban board in VS Code.
 
 ## MCP Setup
 
-Add to your `.mcp.json`:
+Copy `.mcp.json.example` to `.mcp.json` in your workspace root:
 
 ```json
 {
   "mcpServers": {
     "agent-board": {
       "command": "node",
-      "args": ["<path-to-extension>/dist/index.js"],
+      "args": ["packages/mcp-server/dist/index.js"],
       "env": {
-        "AGENT_BOARD_DB": "<path-to-workspace>/.agent-board/board.db"
+        "AGENT_BOARD_DB": ".agent-board/board.db"
       }
     }
   }
