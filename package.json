@@ -1,6 +1,7 @@
 {
   "private": true,
   "name": "agent-board",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "pnpm --filter @agent-board/shared build && pnpm --filter \"!@agent-board/shared\" -r run build",

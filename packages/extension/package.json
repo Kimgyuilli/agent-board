@@ -2,8 +2,9 @@
   "name": "agent-board",
   "version": "0.0.1",
   "displayName": "Agent Board",
-  "description": "AI 에이전트의 개발 태스크를 관리하고 활동을 실시간 모니터링하는 VS Code 확장",
+  "description": "Manage AI agent development tasks with a real-time kanban board in VS Code",
   "publisher": "agent-board",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/kimgyuilli/agent-board"
@@ -13,6 +14,8 @@
   },
   "main": "./dist/extension.js",
   "categories": [
+    "AI",
+    "Visualization",
     "Other"
   ],
   "contributes": {
@@ -37,12 +40,12 @@
         "agentBoard.notifications.taskCompleted": {
           "type": "boolean",
           "default": true,
-          "description": "태스크 완료 시 알림 표시"
+          "description": "Show notification when a task is completed"
         },
         "agentBoard.notifications.taskBlocked": {
           "type": "boolean",
           "default": true,
-          "description": "태스크 차단 시 알림 표시"
+          "description": "Show notification when a task is blocked"
         }
       }
     },
@@ -55,7 +58,51 @@
           "icon": "$(kanban)"
         }
       ]
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "agent-board.getStarted",
+        "title": "Get Started with Agent Board",
+        "description": "Learn how to set up and use Agent Board to manage AI agent tasks.",
+        "steps": [
+          {
+            "id": "welcome",
+            "title": "Welcome to Agent Board",
+            "description": "Agent Board helps you manage AI agent development tasks with a real-time kanban board.\n\n[Read the docs](https://github.com/kimgyuilli/agent-board)",
+            "media": {
+              "markdown": "resources/walkthrough/welcome.md"
+            }
+          },
+          {
+            "id": "openBoard",
+            "title": "Open the Board",
+            "description": "Open the kanban board to view and manage your tasks.\n\n[Open Agent Board](command:agent-board.showBoard)",
+            "media": {
+              "markdown": "resources/walkthrough/open-board.md"
+            },
+            "completionEvents": [
+              "onCommand:agent-board.showBoard"
+            ]
+          },
+          {
+            "id": "connectMcp",
+            "title": "Connect MCP Server",
+            "description": "Configure your AI agent to connect to the Agent Board MCP server.",
+            "media": {
+              "markdown": "resources/walkthrough/connect-mcp.md"
+            }
+          },
+          {
+            "id": "createPhase",
+            "title": "Create Your First Phase",
+            "description": "Use the add_phase MCP tool to create your first project phase.",
+            "media": {
+              "markdown": "resources/walkthrough/create-phase.md"
+            }
+          }
+        ]
+      }
+    ]
   },
   "scripts": {
     "prebuild": "node -e \"import('fs').then(f=>{if(!f.existsSync('../webview/dist')){console.error('ERROR: ../webview/dist not found. Build webview first.');process.exit(1);}if(!f.existsSync('../mcp-server/dist/board-server.js')){console.error('ERROR: ../mcp-server/dist/board-server.js not found. Build mcp-server first.');process.exit(1);}f.cpSync('../webview/dist','dist/webview',{recursive:true});f.cpSync('../mcp-server/dist/board-server.js','dist/board-server.js');})\"",

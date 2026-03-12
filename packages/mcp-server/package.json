@@ -2,6 +2,7 @@
   "name": "@agent-board/mcp-server",
   "version": "0.0.1",
   "description": "Agent Board MCP 도구 서버",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {

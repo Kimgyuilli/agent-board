@@ -2,6 +2,7 @@
   "name": "@agent-board/webview",
   "version": "0.0.1",
   "description": "Agent Board 칸반 보드 UI",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
