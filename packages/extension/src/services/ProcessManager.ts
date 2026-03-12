@@ -71,7 +71,7 @@ export class ProcessManager implements vscode.Disposable {
 
     this._process.on("error", (err) => {
       this._callbacks.onStderr(`[ProcessManager] spawn error: ${err.message}`);
-      this._callbacks.onCriticalError?.(`board-server 시작 실패: ${err.message}`);
+      this._callbacks.onCriticalError?.(`Failed to start board-server: ${err.message}`);
       this._rl?.close();
       this._rl = null;
       this._process = null;

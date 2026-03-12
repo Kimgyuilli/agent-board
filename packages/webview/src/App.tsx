@@ -81,7 +81,7 @@ export default function App() {
   if (!available) {
     return (
       <div className="flex h-screen items-center justify-center p-4 text-center">
-        <span className="text-sm opacity-70">VS Code 환경에서만 사용 가능합니다</span>
+        <span className="text-sm opacity-70">This extension is only available in VS Code</span>
       </div>
     );
   }

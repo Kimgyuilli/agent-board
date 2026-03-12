@@ -46,7 +46,7 @@ export default function StatusDropdown({ currentStatus, onStatusChange }: Status
         {statusLabels[currentStatus]}
       </button>
       {open && (
-        <div className="status-dropdown" role="listbox" aria-label="상태 선택">
+        <div className="status-dropdown" role="listbox" aria-label="Select status">
           {allStatuses.map((value) => (
             <button
               key={value}

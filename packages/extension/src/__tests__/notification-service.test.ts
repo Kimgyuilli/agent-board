@@ -47,7 +47,7 @@ describe("NotificationService", () => {
 
     svc.notify(log, [task]);
 
-    expect(showInformationMessage).toHaveBeenCalledWith("bot-1 완료: Setup", "보기");
+    expect(showInformationMessage).toHaveBeenCalledWith("bot-1 completed: Setup", "View");
   });
 
   it("should show warning message for blocked log", () => {
@@ -56,7 +56,7 @@ describe("NotificationService", () => {
 
     svc.notify(log, [task]);
 
-    expect(showWarningMessage).toHaveBeenCalledWith("bot-2 차단됨: Deploy", "보기");
+    expect(showWarningMessage).toHaveBeenCalledWith("bot-2 blocked: Deploy", "View");
   });
 
   it("should use 'Agent' fallback when agent_id is null", () => {
@@ -65,7 +65,7 @@ describe("NotificationService", () => {
 
     svc.notify(log, [task]);
 
-    expect(showInformationMessage).toHaveBeenCalledWith("Agent 완료: Test", "보기");
+    expect(showInformationMessage).toHaveBeenCalledWith("Agent completed: Test", "View");
   });
 
   it("should skip duplicate log IDs", () => {
@@ -143,8 +143,8 @@ describe("NotificationService", () => {
     expect(showWarningMessage).not.toHaveBeenCalled();
   });
 
-  it("should execute command when '보기' button is clicked", async () => {
-    showInformationMessage.mockResolvedValue("보기");
+  it("should execute command when 'View' button is clicked", async () => {
+    showInformationMessage.mockResolvedValue("View");
 
     const task = createTask({ title: "View" });
     const log = createProgressLog({ task_id: task.id, type: "completed" });

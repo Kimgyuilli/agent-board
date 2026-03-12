@@ -1,10 +1,10 @@
 import type { TaskStatus } from "@agent-board/shared";
 
 export const statusLabels: Record<TaskStatus, string> = {
-  pending: "대기",
-  in_progress: "진행 중",
-  done: "완료",
-  blocked: "차단됨",
+  pending: "Pending",
+  in_progress: "In Progress",
+  done: "Done",
+  blocked: "Blocked",
 };
 
 export const statusClassNames: Record<TaskStatus, string> = {

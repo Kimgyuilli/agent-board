@@ -12,6 +12,7 @@ function renderModal(overrides?: Record<string, unknown>) {
     onStatusChange: vi.fn(),
     onSave: vi.fn(),
     onClose: vi.fn(),
+    onDeleteTask: vi.fn(),
     ...overrides,
   };
   return { ...render(<TaskDetailModal {...defaultProps} />), props: defaultProps };
@@ -43,25 +44,25 @@ describe("TaskDetailModal", () => {
 
   it("should disable save button when not dirty", () => {
     renderModal({ isDirty: false });
-    const saveBtn = screen.getByText("저장");
+    const saveBtn = screen.getByText("Save");
     expect((saveBtn as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("should enable save button when dirty", () => {
     renderModal({ isDirty: true });
-    const saveBtn = screen.getByText("저장");
+    const saveBtn = screen.getByText("Save");
     expect((saveBtn as HTMLButtonElement).disabled).toBe(false);
   });
 
   it("should call onSave when save button clicked", () => {
     const { props } = renderModal({ isDirty: true });
-    fireEvent.click(screen.getByText("저장"));
+    fireEvent.click(screen.getByText("Save"));
     expect(props.onSave).toHaveBeenCalled();
   });
 
   it("should call onClose when cancel button clicked", () => {
     const { props } = renderModal();
-    fireEvent.click(screen.getByText("취소"));
+    fireEvent.click(screen.getByText("Cancel"));
     expect(props.onClose).toHaveBeenCalled();
   });
 

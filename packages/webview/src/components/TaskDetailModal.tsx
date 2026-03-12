@@ -90,13 +90,13 @@ export default function TaskDetailModal({
                 className="modal-close"
                 onClick={handleDeleteClick}
                 type="button"
-                aria-label="삭제"
+                aria-label="Delete"
                 title="Delete Task"
                 style={{ color: "var(--vscode-errorForeground)" }}
               >
                 🗑
               </button>
-              <button className="modal-close" onClick={onClose} type="button" aria-label="닫기">
+              <button className="modal-close" onClick={onClose} type="button" aria-label="Close">
                 ✕
               </button>
             </div>
@@ -104,7 +104,7 @@ export default function TaskDetailModal({
 
         <div className="modal-body">
           <div className="modal-field">
-            <label className="modal-label" htmlFor="task-title">제목</label>
+            <label className="modal-label" htmlFor="task-title">Title</label>
             <input
               id="task-title"
               className="modal-input"
@@ -114,7 +114,7 @@ export default function TaskDetailModal({
           </div>
 
           <div className="modal-field">
-            <label className="modal-label" htmlFor="task-desc">설명</label>
+            <label className="modal-label" htmlFor="task-desc">Description</label>
             <textarea
               id="task-desc"
               className="modal-input modal-textarea"
@@ -125,7 +125,7 @@ export default function TaskDetailModal({
           </div>
 
           <div className="modal-field">
-            <label className="modal-label" htmlFor="task-agent">담당 에이전트</label>
+            <label className="modal-label" htmlFor="task-agent">Agent</label>
             <input
               id="task-agent"
               className="modal-input"
@@ -136,13 +136,13 @@ export default function TaskDetailModal({
           </div>
 
           <div className="modal-field">
-            <label className="modal-label">상태</label>
+            <label className="modal-label">Status</label>
             <StatusDropdown currentStatus={task.status} onStatusChange={onStatusChange} />
           </div>
 
           {task.status === "blocked" && task.blocked_reason && (
             <div className="modal-field">
-              <label className="modal-label">차단 사유</label>
+              <label className="modal-label">Blocked Reason</label>
               <p className="text-xs" style={{ color: "var(--vscode-errorForeground)" }}>
                 {task.blocked_reason}
               </p>
@@ -151,23 +151,23 @@ export default function TaskDetailModal({
 
           {progressLogs !== undefined && (
             <div className="modal-field">
-              <label className="modal-label">활동 기록</label>
+              <label className="modal-label">Activity Log</label>
               <ProgressTimeline logs={progressLogs} loading={progressLogsLoading ?? false} />
             </div>
           )}
 
           <div className="modal-field modal-meta">
-            <span>생성: {new Date(task.created_at + "Z").toLocaleString()}</span>
-            <span>수정: {new Date(task.updated_at + "Z").toLocaleString()}</span>
+            <span>Created: {new Date(task.created_at + "Z").toLocaleString()}</span>
+            <span>Updated: {new Date(task.updated_at + "Z").toLocaleString()}</span>
           </div>
         </div>
 
         <div className="modal-footer">
           <button className="btn-secondary" onClick={onClose} type="button">
-            취소
+            Cancel
           </button>
           <button className="btn-primary" onClick={onSave} disabled={!isDirty} type="button">
-            저장
+            Save
           </button>
         </div>
       </div>
@@ -175,9 +175,9 @@ export default function TaskDetailModal({
       <ConfirmDialog
         open={showDeleteConfirm}
         title="Delete Task"
-        message="이 태스크를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
-        confirmLabel="삭제"
-        cancelLabel="취소"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
         variant="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setShowDeleteConfirm(false)}

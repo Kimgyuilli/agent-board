@@ -32,11 +32,11 @@ export class NotificationService {
     if (log.type === "completed" && config.get("taskCompleted", true)) {
       vscode.window
         .showInformationMessage(
-          `${log.agent_id ?? "Agent"} 완료: ${task.title}`,
-          "보기",
+          `${log.agent_id ?? "Agent"} completed: ${task.title}`,
+          "View",
         )
         .then((sel) => {
-          if (sel === "보기") {
+          if (sel === "View") {
             vscode.commands.executeCommand("agent-board.showBoard");
           }
         });
@@ -45,11 +45,11 @@ export class NotificationService {
     if (log.type === "blocked" && config.get("taskBlocked", true)) {
       vscode.window
         .showWarningMessage(
-          `${log.agent_id ?? "Agent"} 차단됨: ${task.title}`,
-          "보기",
+          `${log.agent_id ?? "Agent"} blocked: ${task.title}`,
+          "View",
         )
         .then((sel) => {
-          if (sel === "보기") {
+          if (sel === "View") {
             vscode.commands.executeCommand("agent-board.showBoard");
           }
         });

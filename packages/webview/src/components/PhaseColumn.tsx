@@ -67,7 +67,7 @@ function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange, onArchiveToggl
           <button
             className="phase-action-btn"
             onClick={() => setShowMenu(!showMenu)}
-            title="Phase 액션"
+            title="Phase actions"
           >
             ⋮
           </button>
@@ -86,15 +86,15 @@ function PhaseColumn({ phase, tasks, onTaskClick, onStatusChange, onArchiveToggl
       <ConfirmDialog
         open={showDeleteConfirm}
         title="Delete Phase"
-        message={tasks.length > 0 ? `이 Phase와 소속된 ${tasks.length}개의 태스크가 모두 삭제됩니다. 이 작업은 되돌릴 수 없습니다.` : "이 Phase를 삭제합니다. 이 작업은 되돌릴 수 없습니다."}
-        confirmLabel="삭제"
-        cancelLabel="취소"
+        message={tasks.length > 0 ? `This phase and all ${tasks.length} tasks in it will be deleted. This action cannot be undone.` : "This phase will be deleted. This action cannot be undone."}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
         variant="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setShowDeleteConfirm(false)}
       />
       {phase.updated_at && (
-        <div className="phase-updated-at">수정: {new Date(phase.updated_at + "Z").toLocaleString()}</div>
+        <div className="phase-updated-at">Updated: {new Date(phase.updated_at + "Z").toLocaleString()}</div>
       )}
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div

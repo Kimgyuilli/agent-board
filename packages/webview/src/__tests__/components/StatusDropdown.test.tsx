@@ -5,13 +5,13 @@ import StatusDropdown from "../../components/StatusDropdown";
 describe("StatusDropdown", () => {
   it("should show current status label", () => {
     render(<StatusDropdown currentStatus="pending" onStatusChange={vi.fn()} />);
-    expect(screen.getByText("대기")).toBeDefined();
+    expect(screen.getByText("Pending")).toBeDefined();
   });
 
   it("should open dropdown on click", () => {
     const { container } = render(<StatusDropdown currentStatus="pending" onStatusChange={vi.fn()} />);
 
-    fireEvent.click(screen.getByText("대기"));
+    fireEvent.click(screen.getByText("Pending"));
     expect(container.querySelector(".status-dropdown")).not.toBeNull();
   });
 
@@ -19,8 +19,8 @@ describe("StatusDropdown", () => {
     const onChange = vi.fn();
     render(<StatusDropdown currentStatus="pending" onStatusChange={onChange} />);
 
-    fireEvent.click(screen.getByText("대기")); // open
-    fireEvent.click(screen.getByText("완료")); // select "done"
+    fireEvent.click(screen.getByText("Pending")); // open
+    fireEvent.click(screen.getByText("Done")); // select "done"
 
     expect(onChange).toHaveBeenCalledWith("done");
   });
@@ -28,7 +28,7 @@ describe("StatusDropdown", () => {
   it("should close on Escape key", () => {
     const { container } = render(<StatusDropdown currentStatus="pending" onStatusChange={vi.fn()} />);
 
-    fireEvent.click(screen.getByText("대기")); // open
+    fireEvent.click(screen.getByText("Pending")); // open
     expect(container.querySelector(".status-dropdown")).not.toBeNull();
 
     fireEvent.keyDown(document, { key: "Escape" });
@@ -43,7 +43,7 @@ describe("StatusDropdown", () => {
       </div>,
     );
 
-    fireEvent.click(screen.getByText("대기")); // open
+    fireEvent.click(screen.getByText("Pending")); // open
     expect(container.querySelector(".status-dropdown")).not.toBeNull();
 
     fireEvent.mouseDown(screen.getByTestId("outside"));

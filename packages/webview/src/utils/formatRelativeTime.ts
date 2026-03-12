@@ -4,10 +4,10 @@ export function formatRelativeTime(dateStr: string): string {
   const diffMs = now - then;
   const diffMin = Math.floor(diffMs / 60_000);
 
-  if (diffMin < 1) return "방금";
-  if (diffMin < 60) return `${diffMin}분 전`;
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
   const diffHour = Math.floor(diffMin / 60);
-  if (diffHour < 24) return `${diffHour}시간 전`;
+  if (diffHour < 24) return `${diffHour}h ago`;
   const diffDay = Math.floor(diffHour / 24);
-  return `${diffDay}일 전`;
+  return `${diffDay}d ago`;
 }

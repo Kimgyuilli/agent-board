@@ -117,7 +117,7 @@ export class ChangeMonitor implements vscode.Disposable {
       this._log(`[ChangeMonitor] poll error: ${msg}`);
       this._consecutiveErrors++;
       if (this._consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-        this._onPollError?.(`변경 감지 폴링이 ${this._consecutiveErrors}회 연속 실패했습니다: ${msg}`);
+        this._onPollError?.(`Change detection polling failed ${this._consecutiveErrors} consecutive times: ${msg}`);
         this._consecutiveErrors = 0;
       }
     }

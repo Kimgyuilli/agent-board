@@ -57,9 +57,9 @@ export function activate(context: vscode.ExtensionContext): void {
     }).catch((err) => {
       const msg = err instanceof Error ? err.message : String(err);
       outputChannel.appendLine(`[init] ${msg}`);
-      vscode.window.showWarningMessage(`Agent Board: 초기화 실패 — ${msg}`, "재시도")
+      vscode.window.showWarningMessage(`Agent Board: initialization failed — ${msg}`, "Retry")
         .then((sel) => {
-          if (sel === "재시도") initWithRetry(client);
+          if (sel === "Retry") initWithRetry(client);
         });
     });
   }

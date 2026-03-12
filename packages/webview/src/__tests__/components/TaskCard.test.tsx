@@ -16,7 +16,7 @@ describe("TaskCard", () => {
     const task = createTask({ status: "done" });
     render(<TaskCard task={task} />);
 
-    expect(screen.getByText("완료")).toBeDefined();
+    expect(screen.getByText("Done")).toBeDefined();
   });
 
   it("should render StatusDropdown when onStatusChange provided", () => {
