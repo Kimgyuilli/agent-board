@@ -526,7 +526,7 @@ describe("deletePhase", () => {
   beforeEach(() => { db = createTestDb(); });
 
   it("should delete a phase and cascade delete its tasks", () => {
-    const { projectId, phaseId } = seedProjectAndPhase(db);
+    const { phaseId } = seedProjectAndPhase(db);
     const taskId = db.prepare("INSERT INTO tasks (phase_id, title, status, position) VALUES (?, 'T1', 'done', 0)").run(phaseId).lastInsertRowid as number;
     db.prepare("INSERT INTO progress_logs (task_id, agent_id, type) VALUES (?, 'agent-1', 'completed')").run(taskId);
 
@@ -546,7 +546,7 @@ describe("deletePhase", () => {
   });
 
   it("should delete phase with task dependencies", () => {
-    const { projectId, phaseId } = seedProjectAndPhase(db);
+    const { phaseId } = seedProjectAndPhase(db);
     const t1 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T1', 0)").run(phaseId).lastInsertRowid as number;
     const t2 = db.prepare("INSERT INTO tasks (phase_id, title, position) VALUES (?, 'T2', 1)").run(phaseId).lastInsertRowid as number;
     db.prepare("INSERT INTO task_dependencies (task_id, depends_on_task_id) VALUES (?, ?)").run(t2, t1);

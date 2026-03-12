@@ -157,7 +157,7 @@ describe("executeBatch", () => {
   });
 
   it("should handle delete_phase operation", () => {
-    const { projectId } = seedProject(db);
+    seedProject(db);
     const ops: BatchOperation[] = [
       { type: "add_phase", title: "Phase to Delete" },
       { type: "add_task", phase_id: "$0", title: "Task in Phase" },
