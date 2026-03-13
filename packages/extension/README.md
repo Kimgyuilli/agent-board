@@ -10,6 +10,7 @@ Manage AI agent development tasks with a real-time kanban board in VS Code.
 - **Agent Activity Tracking** — Progress log timeline
 - **Notifications** — Alerts for task completion and blockers
 - **MCP Integration** — AI agents manage tasks via Model Context Protocol
+- **Project Setup Wizard** — Scaffold `.claude/` config and `CLAUDE.md` with Solo or Team templates
 
 ## Quick Start
 
@@ -47,3 +48,4 @@ Copy `.mcp.json.example` to `.mcp.json` in your workspace root:
 | Command | Description |
 |---------|-------------|
 | `Agent Board: Show Board` | Open the kanban board panel |
+| `Agent Board: Setup Project` | Open the project setup wizard |

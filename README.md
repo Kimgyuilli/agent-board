@@ -15,13 +15,43 @@ Manage AI agent development tasks with a real-time kanban board in VS Code.
 - **Agent Activity Tracking** — Progress log timeline for agent work history
 - **Notifications** — VS Code alerts for task completion and blockers
 - **MCP Integration** — AI agents manage tasks via Model Context Protocol tools
+- **Project Setup Wizard** — Generate `.claude/` config and `CLAUDE.md` with guided templates
 
 ## Quick Start
 
 1. Install the extension from the VS Code Marketplace (or build from source)
 2. Open the board: `Ctrl+Shift+P` → **Agent Board: Show Board**
-3. Connect an MCP-compatible AI agent (see [MCP Setup](#mcp-setup))
-4. Start managing tasks!
+3. Run the Setup Wizard to scaffold your project (see [Setup Wizard](#setup-wizard))
+4. Connect an MCP-compatible AI agent (see [MCP Setup](#mcp-setup))
+5. Start managing tasks!
+
+## Setup Wizard
+
+The Setup Wizard helps beginners scaffold the configuration files needed for Claude Code agents.
+
+Run via **Command Palette** (`Ctrl+Shift+P` → `Agent Board: Setup Project`) or click the **Setup Project** button in the empty board view.
+
+The wizard walks through 3 steps:
+
+1. **Project Info** — Enter your project name, description, and tech stack
+2. **Template Selection** — Choose between two templates:
+   - **Solo** — Single developer workflow (`CLAUDE.md` + `.claude/settings.json`)
+   - **Team** — Multi-agent orchestrator workflow (adds agent definitions and skill files)
+3. **Preview & Generate** — Review the file list and generate to your workspace root
+
+### Generated Files (Team template)
+
+```
+CLAUDE.md                        # Project description + conventions + orchestrator workflow
+.claude/settings.json            # Claude Code settings
+.claude/agents/backend-dev.md    # Backend implementation agent
+.claude/agents/frontend-dev.md   # Frontend UI agent
+.claude/agents/reviewer.md       # Code review agent
+.claude/skills/review/SKILL.md   # Code review skill
+.claude/skills/test/SKILL.md     # Test runner skill
+```
+
+> If files already exist, the wizard warns you and offers an overwrite option.
 
 ## MCP Setup
 
