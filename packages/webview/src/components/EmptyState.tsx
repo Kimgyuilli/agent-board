@@ -1,9 +1,10 @@
 interface EmptyStateProps {
   archivedPhaseCount: number;
   onShowArchived?: () => void;
+  onSetupProject?: () => void;
 }
 
-export default function EmptyState({ archivedPhaseCount, onShowArchived }: EmptyStateProps) {
+export default function EmptyState({ archivedPhaseCount, onShowArchived, onSetupProject }: EmptyStateProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
       <h2 className="text-sm font-semibold" style={{ color: "var(--vscode-foreground)" }}>
@@ -34,6 +35,17 @@ export default function EmptyState({ archivedPhaseCount, onShowArchived }: Empty
           </li>
         </ol>
       </div>
+
+      <button
+        className="rounded px-4 py-1.5 text-xs font-medium"
+        style={{
+          background: "var(--vscode-button-background)",
+          color: "var(--vscode-button-foreground)",
+        }}
+        onClick={onSetupProject}
+      >
+        Setup Project
+      </button>
 
       {archivedPhaseCount > 0 && (
         <>

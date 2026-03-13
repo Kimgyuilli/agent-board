@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { TaskStatus } from "@agent-board/shared";
+import type { TaskStatus, ExtensionToWebviewMessage } from "@agent-board/shared";
 import { useBoardData } from "./hooks/useBoardData";
 import { useTaskActions } from "./hooks/useTaskActions";
 import { useTaskDetail } from "./hooks/useTaskDetail";
@@ -8,11 +8,27 @@ import { useProgressLogs } from "./hooks/useProgressLogs";
 import KanbanBoard from "./components/KanbanBoard";
 import TaskDetailModal from "./components/TaskDetailModal";
 import EmptyState from "./components/EmptyState";
+import SetupWizard from "./components/SetupWizard";
 
 export default function App() {
-  const { phases, tasks, archivedPhaseCount, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, available } =
+  const { phases, tasks, archivedPhaseCount, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, setSetupHandler, available } =
     useBoardData();
   const [showArchived, setShowArchived] = useState(false);
+
+  type AppView = "board" | "setup-wizard";
+  const [view, setView] = useState<AppView>("board");
+
+  useEffect(() => {
+    if (view !== "setup-wizard") {
+      const handler = (msg: ExtensionToWebviewMessage) => {
+        if (msg.type === "show-setup-wizard") {
+          setView("setup-wizard");
+        }
+      };
+      setSetupHandler(handler);
+      return () => setSetupHandler(null);
+    }
+  }, [view, setSetupHandler]);
   const actions = useTaskActions(postMessage);
   const detail = useTaskDetail();
   const progressLogs = useProgressLogs(detail.selectedTask?.id ?? null, postMessage);
@@ -94,6 +110,21 @@ export default function App() {
     );
   }
 
+  if (view === "setup-wizard") {
+    return (
+      <div className="app-container">
+        <SetupWizard
+          onClose={() => {
+            setView("board");
+            postMessage({ type: "request-refresh" });
+          }}
+          postMessage={postMessage}
+          setSetupHandler={setSetupHandler}
+        />
+      </div>
+    );
+  }
+
   if (!phases?.length) {
     return (
       <div className="app-container">
@@ -103,6 +134,7 @@ export default function App() {
             setShowArchived(true);
             postMessage({ type: "toggle-archive-visibility", show: true });
           }}
+          onSetupProject={() => setView("setup-wizard")}
         />
       </div>
     );
