@@ -1,4 +1,5 @@
 import type { Task, Phase, ProgressLog } from "./models.js";
+import type { SetupProjectConfig } from "./setup.js";
 
 // === Extension → Webview 메시지 ===
 
@@ -36,13 +37,34 @@ export interface ErrorMessage {
   message: string;
 }
 
+export interface ShowSetupWizardMessage {
+  type: "show-setup-wizard";
+}
+
+export interface CheckExistingSetupResultMessage {
+  type: "check-existing-setup-result";
+  exists: boolean;
+  existingFiles: string[];
+}
+
+export interface SetupResultMessage {
+  type: "setup-result";
+  success: boolean;
+  filesCreated: string[];
+  filesSkipped: string[];
+  error?: string;
+}
+
 export type ExtensionToWebviewMessage =
   | TasksUpdatedMessage
   | PhasesUpdatedMessage
   | ProgressLogAddedMessage
   | ProgressLogsResponseMessage
   | InitDataMessage
-  | ErrorMessage;
+  | ErrorMessage
+  | ShowSetupWizardMessage
+  | CheckExistingSetupResultMessage
+  | SetupResultMessage;
 
 // === Webview → Extension 메시지 ===
 
@@ -95,6 +117,15 @@ export interface ToggleArchiveVisibilityMessage {
   show: boolean;
 }
 
+export interface CheckExistingSetupMessage {
+  type: "check-existing-setup";
+}
+
+export interface SetupProjectMessage {
+  type: "setup-project";
+  config: SetupProjectConfig;
+}
+
 export type WebviewToExtensionMessage =
   | MoveTaskMessage
   | UpdateTaskStatusMessage
@@ -104,4 +135,6 @@ export type WebviewToExtensionMessage =
   | ArchivePhaseMessage
   | DeletePhaseMessage
   | DeleteTaskMessage
-  | ToggleArchiveVisibilityMessage;
+  | ToggleArchiveVisibilityMessage
+  | CheckExistingSetupMessage
+  | SetupProjectMessage;

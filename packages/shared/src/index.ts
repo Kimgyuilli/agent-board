@@ -21,7 +21,14 @@ export type {
   ProgressLogsResponseMessage,
   RequestProgressLogsMessage,
   ArchivePhaseMessage,
+  ShowSetupWizardMessage,
+  CheckExistingSetupResultMessage,
+  SetupResultMessage,
+  CheckExistingSetupMessage,
+  SetupProjectMessage,
 } from "./messages.js";
+
+export type { SetupTemplate, SetupProjectConfig } from "./setup.js";
 
 export type {
   SyncParams,
