@@ -18,6 +18,7 @@ export function useBoardData() {
   const [loading, setLoading] = useState(true);
   const snapshotRef = useRef<Task[] | null>(null);
   const progressHandlerRef = useRef<((msg: ExtensionToWebviewMessage) => void) | null>(null);
+  const setupHandlerRef = useRef<((msg: ExtensionToWebviewMessage) => void) | null>(null);
 
   const handleMessage = useCallback((msg: ExtensionToWebviewMessage) => {
     switch (msg.type) {
@@ -44,6 +45,11 @@ export function useBoardData() {
       case "progress-logs-response":
       case "progress-log-added":
         progressHandlerRef.current?.(msg);
+        break;
+      case "show-setup-wizard":
+      case "check-existing-setup-result":
+      case "setup-result":
+        setupHandlerRef.current?.(msg);
         break;
       case "error":
         // RPC 실패 시 낙관적 업데이트 롤백
@@ -83,5 +89,9 @@ export function useBoardData() {
     progressHandlerRef.current = handler;
   }, []);
 
-  return { phases, tasks, archivedPhaseCount, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, available };
+  const setSetupHandler = useCallback((handler: ((msg: ExtensionToWebviewMessage) => void) | null) => {
+    setupHandlerRef.current = handler;
+  }, []);
+
+  return { phases, tasks, archivedPhaseCount, loading, postMessage, takeSnapshot, applyOptimistic, rollback, setProgressHandler, setSetupHandler, available };
 }
