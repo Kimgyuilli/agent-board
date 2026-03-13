@@ -1,6 +1,7 @@
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as path from "path";
 import type { SetupProjectConfig } from "@agent-board/shared";
+import { SETUP_FILES } from "@agent-board/shared";
 
 interface CheckResult {
   exists: boolean;
@@ -17,26 +18,21 @@ interface ScaffoldResult {
 export class SetupService {
   constructor(private readonly workspaceRoot: string) {}
 
-  checkExisting(): CheckResult {
+  async checkExisting(): Promise<CheckResult> {
     const existingFiles: string[] = [];
-    const targets = [
-      "CLAUDE.md",
-      ".claude/settings.json",
-      ".claude/agents/backend-dev.md",
-      ".claude/agents/frontend-dev.md",
-      ".claude/agents/reviewer.md",
-      ".claude/skills/review/SKILL.md",
-      ".claude/skills/test/SKILL.md",
-    ];
+    const targets = SETUP_FILES.team; // team is superset of solo
     for (const rel of targets) {
-      if (fs.existsSync(path.join(this.workspaceRoot, rel))) {
+      try {
+        await fs.access(path.join(this.workspaceRoot, rel));
         existingFiles.push(rel);
+      } catch {
+        // file does not exist
       }
     }
     return { exists: existingFiles.length > 0, existingFiles };
   }
 
-  scaffold(config: SetupProjectConfig): ScaffoldResult {
+  async scaffold(config: SetupProjectConfig): Promise<ScaffoldResult> {
     try {
       const files = this._getTemplateFiles(config);
       const filesCreated: string[] = [];
@@ -48,18 +44,23 @@ export class SetupService {
         dirs.push(".claude/agents", ".claude/skills/review", ".claude/skills/test");
       }
       for (const dir of dirs) {
-        fs.mkdirSync(path.join(this.workspaceRoot, dir), { recursive: true });
+        await fs.mkdir(path.join(this.workspaceRoot, dir), { recursive: true });
       }
 
       // Write files
       for (const [rel, content] of files) {
         const fullPath = path.join(this.workspaceRoot, rel);
-        if (!config.overwriteExisting && fs.existsSync(fullPath)) {
-          filesSkipped.push(rel);
-          continue;
+        if (!config.overwriteExisting) {
+          try {
+            await fs.access(fullPath);
+            filesSkipped.push(rel);
+            continue;
+          } catch {
+            // file does not exist, proceed to write
+          }
         }
-        fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-        fs.writeFileSync(fullPath, content, "utf-8");
+        await fs.mkdir(path.dirname(fullPath), { recursive: true });
+        await fs.writeFile(fullPath, content, "utf-8");
         filesCreated.push(rel);
       }
 

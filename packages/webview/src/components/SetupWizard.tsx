@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { ExtensionToWebviewMessage, SetupTemplate } from "@agent-board/shared";
+import { SETUP_FILES } from "@agent-board/shared";
 import { useSetupWizard } from "../hooks/useSetupWizard";
 
 interface SetupWizardProps {
@@ -7,17 +8,6 @@ interface SetupWizardProps {
   postMessage: (msg: unknown) => void;
   setSetupHandler: (handler: ((msg: ExtensionToWebviewMessage) => void) | null) => void;
 }
-
-const SOLO_FILES = ["CLAUDE.md", ".claude/settings.json"];
-const TEAM_FILES = [
-  "CLAUDE.md",
-  ".claude/settings.json",
-  ".claude/agents/backend-dev.md",
-  ".claude/agents/frontend-dev.md",
-  ".claude/agents/reviewer.md",
-  ".claude/skills/review/SKILL.md",
-  ".claude/skills/test/SKILL.md",
-];
 
 export default function SetupWizard({ onClose, postMessage, setSetupHandler }: SetupWizardProps) {
   const wizard = useSetupWizard(postMessage);
@@ -27,7 +17,7 @@ export default function SetupWizard({ onClose, postMessage, setSetupHandler }: S
     return () => setSetupHandler(null);
   }, [setSetupHandler, wizard.handleMessage]);
 
-  const files = wizard.config.template === "team" ? TEAM_FILES : SOLO_FILES;
+  const files = SETUP_FILES[wizard.config.template];
   const hasExisting = wizard.existingFiles != null && wizard.existingFiles.length > 0;
 
   return (
@@ -89,14 +79,14 @@ export default function SetupWizard({ onClose, postMessage, setSetupHandler }: S
             <TemplateCard
               title="Solo Developer"
               description="Single developer workflow. Creates CLAUDE.md and basic settings."
-              files={SOLO_FILES}
+              files={SETUP_FILES.solo}
               selected={wizard.config.template === "solo"}
               onClick={() => wizard.updateConfig({ template: "solo" as SetupTemplate })}
             />
             <TemplateCard
               title="Multi-Agent Team"
               description="Orchestrator + sub-agents workflow. Creates CLAUDE.md, agent definitions, and skill files."
-              files={TEAM_FILES}
+              files={SETUP_FILES.team}
               selected={wizard.config.template === "team"}
               onClick={() => wizard.updateConfig({ template: "team" as SetupTemplate })}
             />

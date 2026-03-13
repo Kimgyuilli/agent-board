@@ -29,6 +29,7 @@ export type {
 } from "./messages.js";
 
 export type { SetupTemplate, SetupProjectConfig } from "./setup.js";
+export { SETUP_FILES } from "./setup.js";
 
 export type {
   SyncParams,

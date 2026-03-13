@@ -137,7 +137,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
             this.postMessage({ type: "check-existing-setup-result", exists: false, existingFiles: [] });
             break;
           }
-          const checkResult = setupService.checkExisting();
+          const checkResult = await setupService.checkExisting();
           this.postMessage({ type: "check-existing-setup-result", ...checkResult });
           break;
         }
@@ -147,7 +147,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
             this.postMessage({ type: "setup-result", success: false, filesCreated: [], filesSkipped: [], error: "No workspace folder open" });
             break;
           }
-          const setupResult = setupService.scaffold(message.config);
+          const setupResult = await setupService.scaffold(message.config);
           this.postMessage({ type: "setup-result", ...setupResult });
           break;
         }
