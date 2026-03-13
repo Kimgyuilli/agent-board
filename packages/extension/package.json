@@ -120,7 +120,7 @@
     ]
   },
   "scripts": {
-    "prebuild": "node -e \"import('fs').then(f=>{if(!f.existsSync('../webview/dist')){console.error('ERROR: ../webview/dist not found. Build webview first.');process.exit(1);}if(!f.existsSync('../mcp-server/dist/board-server.js')){console.error('ERROR: ../mcp-server/dist/board-server.js not found. Build mcp-server first.');process.exit(1);}f.cpSync('../webview/dist','dist/webview',{recursive:true});f.cpSync('../mcp-server/dist/board-server.js','dist/board-server.js');})\"",
+    "prebuild": "node -e \"import('fs').then(f=>{if(!f.existsSync('../webview/dist')){console.error('ERROR: ../webview/dist not found. Build webview first.');process.exit(1);}if(!f.existsSync('../mcp-server/dist/board-server.js')){console.error('ERROR: ../mcp-server/dist/board-server.js not found. Build mcp-server first.');process.exit(1);}if(!f.existsSync('../mcp-server/dist/index.js')){console.error('ERROR: ../mcp-server/dist/index.js not found. Build mcp-server first.');process.exit(1);}f.cpSync('../webview/dist','dist/webview',{recursive:true});f.cpSync('../mcp-server/dist/board-server.js','dist/board-server.js');f.cpSync('../mcp-server/dist/index.js','dist/mcp-server.js');})\"",
     "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
     "test": "vitest run",
     "lint": "eslint src/",

@@ -64,6 +64,17 @@ export class SetupService {
         filesCreated.push(rel);
       }
 
+      // Write .mcp.json (merge if exists)
+      if (config.extensionPath) {
+        const mcpResult = await this._writeMcpConfig(config.extensionPath, config.overwriteExisting);
+        if (mcpResult.created) {
+          filesCreated.push(".mcp.json");
+        }
+        if (mcpResult.skipped) {
+          filesSkipped.push(".mcp.json");
+        }
+      }
+
       return { success: true, filesCreated, filesSkipped };
     } catch (err) {
       return {
@@ -100,6 +111,48 @@ export class SetupService {
     }
 
     return md;
+  }
+
+  private async _writeMcpConfig(
+    extensionPath: string,
+    overwriteExisting: boolean
+  ): Promise<{ created: boolean; skipped: boolean }> {
+    const mcpPath = path.join(this.workspaceRoot, ".mcp.json");
+    const serverJsPath = path.join(extensionPath, "dist", "mcp-server.js").replace(/\\/g, "/");
+
+    const agentBoardEntry = {
+      command: "node",
+      args: [serverJsPath],
+      env: { AGENT_BOARD_DB: ".agent-board/board.db" },
+    };
+
+    let existing: Record<string, unknown> | null = null;
+    try {
+      const raw = await fs.readFile(mcpPath, "utf-8");
+      existing = JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      // file does not exist or parse failed → create new
+    }
+
+    if (existing) {
+      // existing file found
+      const mcpServers = existing.mcpServers as Record<string, unknown> | undefined;
+      if (!overwriteExisting && mcpServers?.["agent-board"]) {
+        return { created: false, skipped: true };
+      }
+      // merge: add/update agent-board entry only
+      if (!existing.mcpServers) {
+        existing.mcpServers = {};
+      }
+      (existing.mcpServers as Record<string, unknown>)["agent-board"] = agentBoardEntry;
+      await fs.writeFile(mcpPath, JSON.stringify(existing, null, 2) + "\n", "utf-8");
+      return { created: true, skipped: false };
+    } else {
+      // create new file
+      const config = { mcpServers: { "agent-board": agentBoardEntry } };
+      await fs.writeFile(mcpPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
+      return { created: true, skipped: false };
+    }
   }
 }
 

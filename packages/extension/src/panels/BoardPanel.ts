@@ -147,7 +147,8 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
             this.postMessage({ type: "setup-result", success: false, filesCreated: [], filesSkipped: [], error: "No workspace folder open" });
             break;
           }
-          const setupResult = await setupService.scaffold(message.config);
+          const configWithPath = { ...message.config, extensionPath: this._extensionUri.fsPath };
+          const setupResult = await setupService.scaffold(configWithPath);
           this.postMessage({ type: "setup-result", ...setupResult });
           break;
         }
