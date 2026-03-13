@@ -86,6 +86,7 @@ export class SetupService {
     }
   }
 
+  // .mcp.json is listed in SETUP_FILES but handled separately by _writeMcpConfig() (merge logic)
   private _getTemplateFiles(config: SetupProjectConfig): [string, string][] {
     const files: [string, string][] = [];
 
@@ -126,33 +127,47 @@ export class SetupService {
       env: { AGENT_BOARD_DB: ".agent-board/board.db" },
     };
 
-    let existing: Record<string, unknown> | null = null;
+    // Check if file exists
+    let raw: string | null = null;
     try {
-      const raw = await fs.readFile(mcpPath, "utf-8");
-      existing = JSON.parse(raw) as Record<string, unknown>;
+      raw = await fs.readFile(mcpPath, "utf-8");
     } catch {
-      // file does not exist or parse failed → create new
+      // file does not exist → create new
     }
 
-    if (existing) {
-      // existing file found
-      const mcpServers = existing.mcpServers as Record<string, unknown> | undefined;
-      if (!overwriteExisting && mcpServers?.["agent-board"]) {
-        return { created: false, skipped: true };
-      }
-      // merge: add/update agent-board entry only
-      if (!existing.mcpServers) {
-        existing.mcpServers = {};
-      }
-      (existing.mcpServers as Record<string, unknown>)["agent-board"] = agentBoardEntry;
-      await fs.writeFile(mcpPath, JSON.stringify(existing, null, 2) + "\n", "utf-8");
-      return { created: true, skipped: false };
-    } else {
-      // create new file
+    if (raw === null) {
+      // No existing file → create new
       const config = { mcpServers: { "agent-board": agentBoardEntry } };
       await fs.writeFile(mcpPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
       return { created: true, skipped: false };
     }
+
+    // File exists → parse and merge
+    let existing: Record<string, unknown>;
+    try {
+      existing = JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      throw new Error(".mcp.json exists but contains invalid JSON. Please fix it manually before running setup.");
+    }
+
+    const mcpServers = existing.mcpServers;
+    if (
+      !overwriteExisting &&
+      typeof mcpServers === "object" &&
+      mcpServers !== null &&
+      !Array.isArray(mcpServers) &&
+      "agent-board" in mcpServers
+    ) {
+      return { created: false, skipped: true };
+    }
+
+    // merge: add/update agent-board entry only
+    if (typeof existing.mcpServers !== "object" || existing.mcpServers === null || Array.isArray(existing.mcpServers)) {
+      existing.mcpServers = {};
+    }
+    (existing.mcpServers as Record<string, unknown>)["agent-board"] = agentBoardEntry;
+    await fs.writeFile(mcpPath, JSON.stringify(existing, null, 2) + "\n", "utf-8");
+    return { created: true, skipped: false };
   }
 }
 
