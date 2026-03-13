@@ -8,8 +8,9 @@ The Setup Wizard helps you generate the configuration files needed for Claude Co
 - **.claude/settings.json** — Claude Code settings
 - **.claude/agents/** — Agent definition files (Team template only)
 - **.claude/skills/** — Skill definition files (Team template only)
+- **.mcp.json** — MCP server configuration (auto-generated with correct extension path)
 
 ## Templates
 
-- **Solo** — For single developers. Creates CLAUDE.md and basic settings.
-- **Team** — For multi-agent orchestration. Creates CLAUDE.md, agent definitions, and skill files.
+- **Solo** — For single developers. Creates CLAUDE.md, basic settings, and MCP config.
+- **Team** — For multi-agent orchestration. Creates CLAUDE.md, agent definitions, skill files, and MCP config.

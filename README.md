@@ -49,26 +49,23 @@ CLAUDE.md                        # Project description + conventions + orchestra
 .claude/agents/reviewer.md       # Code review agent
 .claude/skills/review/SKILL.md   # Code review skill
 .claude/skills/test/SKILL.md     # Test runner skill
+.mcp.json                        # MCP server config (auto-generated with extension path)
 ```
 
 > If files already exist, the wizard warns you and offers an overwrite option.
 
 ## MCP Setup
 
-Copy the example config and adjust paths if needed:
+The **Setup Wizard** automatically generates `.mcp.json` with the correct extension path when you run it. No manual configuration needed.
 
-```bash
-cp .mcp.json.example .mcp.json
-```
-
-The default config works out of the box for development:
+If you prefer manual setup, create `.mcp.json` in your workspace root:
 
 ```json
 {
   "mcpServers": {
     "agent-board": {
       "command": "node",
-      "args": ["packages/mcp-server/dist/index.js"],
+      "args": ["<path-to-extension>/dist/mcp-server.js"],
       "env": {
         "AGENT_BOARD_DB": ".agent-board/board.db"
       }
@@ -77,7 +74,7 @@ The default config works out of the box for development:
 }
 ```
 
-> **Note**: Make sure to build the MCP server first (`pnpm build`).
+> **Note**: Replace `<path-to-extension>` with your VS Code extension install path (e.g., `~/.vscode/extensions/agent-board-0.0.1`). If existing `.mcp.json` is present, the Setup Wizard merges the `agent-board` entry without overwriting other servers.
 
 ## MCP Tool Reference
 

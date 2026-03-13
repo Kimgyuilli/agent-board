@@ -2,25 +2,31 @@
 
 Agent Board includes an MCP (Model Context Protocol) server that AI agents use to manage tasks.
 
-## Setup
+## Automatic Setup (Recommended)
 
-Add the following to your MCP client configuration (e.g., `.mcp.json`):
+Run the **Setup Wizard** (`Ctrl+Shift+P` → `Agent Board: Setup Project`). It automatically generates `.mcp.json` in your workspace with the correct extension path.
+
+If your workspace already has a `.mcp.json` with other MCP servers, the wizard merges the `agent-board` entry without overwriting existing configuration.
+
+## Manual Setup
+
+If you prefer manual configuration, add the following to `.mcp.json` in your workspace root:
 
 ```json
 {
   "mcpServers": {
     "agent-board": {
       "command": "node",
-      "args": ["path/to/agent-board/dist/index.js"],
+      "args": ["<path-to-extension>/dist/mcp-server.js"],
       "env": {
-        "AGENT_BOARD_DB": "path/to/workspace/.agent-board/board.db"
+        "AGENT_BOARD_DB": ".agent-board/board.db"
       }
     }
   }
 }
 ```
 
-Replace the paths with actual paths to the installed extension and your project directory.
+Replace `<path-to-extension>` with your VS Code extension install path.
 
 ## Verify
 
