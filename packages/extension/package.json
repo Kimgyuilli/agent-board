@@ -23,6 +23,10 @@
       {
         "command": "agent-board.showBoard",
         "title": "Agent Board: Show Board"
+      },
+      {
+        "command": "agent-board.setupProject",
+        "title": "Agent Board: Setup Project"
       }
     ],
     "viewsContainers": {
@@ -99,6 +103,17 @@
             "media": {
               "markdown": "resources/walkthrough/create-phase.md"
             }
+          },
+          {
+            "id": "setupProject",
+            "title": "Setup Your Project",
+            "description": "Generate .claude/ config and CLAUDE.md for your workspace.\n\n[Run Setup Wizard](command:agent-board.setupProject)",
+            "media": {
+              "markdown": "resources/walkthrough/setup-project.md"
+            },
+            "completionEvents": [
+              "onCommand:agent-board.setupProject"
+            ]
           }
         ]
       }

@@ -5,6 +5,7 @@ import type {
   WebviewToExtensionMessage,
 } from "@agent-board/shared";
 import type { IBoardService } from "../services/BoardClient.js";
+import { SetupService } from "../services/SetupService.js";
 
 /**
  * Webview 패널을 관리하는 프로바이더.
@@ -14,6 +15,7 @@ import type { IBoardService } from "../services/BoardClient.js";
 export class BoardPanelProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
   private _showArchived = false;
+  private _setupService?: SetupService;
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
@@ -43,6 +45,22 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
       messageDisposable.dispose();
       this._view = undefined;
     });
+  }
+
+  public showSetupWizard(): void {
+    this.postMessage({ type: "show-setup-wizard" });
+  }
+
+  private _getWorkspaceRoot(): string | undefined {
+    return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  }
+
+  private _getSetupService(): SetupService | undefined {
+    if (this._setupService) return this._setupService;
+    const root = this._getWorkspaceRoot();
+    if (!root) return undefined;
+    this._setupService = new SetupService(root);
+    return this._setupService;
   }
 
   public postMessage(message: ExtensionToWebviewMessage): void {
@@ -111,6 +129,26 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
         case "delete-task": {
           const deleteTaskResult = await this._service.deleteTask(message.taskId);
           this.postMessage({ type: "tasks-updated", tasks: deleteTaskResult.tasks });
+          break;
+        }
+        case "check-existing-setup": {
+          const setupService = this._getSetupService();
+          if (!setupService) {
+            this.postMessage({ type: "check-existing-setup-result", exists: false, existingFiles: [] });
+            break;
+          }
+          const checkResult = setupService.checkExisting();
+          this.postMessage({ type: "check-existing-setup-result", ...checkResult });
+          break;
+        }
+        case "setup-project": {
+          const setupService = this._getSetupService();
+          if (!setupService) {
+            this.postMessage({ type: "setup-result", success: false, filesCreated: [], filesSkipped: [], error: "No workspace folder open" });
+            break;
+          }
+          const setupResult = setupService.scaffold(message.config);
+          this.postMessage({ type: "setup-result", ...setupResult });
           break;
         }
       }

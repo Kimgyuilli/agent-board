@@ -46,6 +46,14 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("agent-board.setupProject", () => {
+      vscode.commands.executeCommand("agent-board.boardView.focus").then(() => {
+        provider.showSetupWizard();
+      });
+    }),
+  );
+
   // Change Monitor + Notification Service
   const notificationService = new NotificationService();
   let cachedTasks: import("@agent-board/shared").Task[] = [];
