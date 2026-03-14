@@ -3,8 +3,22 @@
   "version": "0.0.1",
   "displayName": "Agent Board",
   "description": "Manage AI agent development tasks with a real-time kanban board in VS Code",
-  "publisher": "agent-board",
+  "publisher": "kimgyuilli",
   "license": "MIT",
+  "icon": "resources/icon.png",
+  "keywords": [
+    "ai",
+    "agent",
+    "kanban",
+    "task management",
+    "mcp",
+    "claude",
+    "model context protocol"
+  ],
+  "galleryBanner": {
+    "color": "#6366F1",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/kimgyuilli/agent-board"
